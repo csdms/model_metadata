@@ -1,8 +1,6 @@
 # model_metadata
 Tools for working with CSDMS Model Metadata
 
-Tools and utilities to work with CSDMS Modeling Metadata.
-
 The CSDMS Model Metadata provides a detailed and formalized
 description of a model. This includes information about:
 
