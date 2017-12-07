@@ -232,7 +232,6 @@ class ModelParameterMixIn(object):
         ...   desc: Time step.
         ...   value: 1.
         ... '''
-        >>> ModelParameter.from_yaml("dt: )
         """
         kwds = yaml.load(buffer)
         value = kwds.pop('value')
