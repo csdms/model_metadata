@@ -11,7 +11,7 @@ from .model_data_files import format_template_file, FileTemplate
 
 
 TEXT_CHARACTERS = ''.join(list(map(chr, range(32, 127))) + list("\n\r\t\b"))
-NULL_TRANS = string.maketrans("", "")
+# NULL_TRANS = string.maketrans("", "")
 
 
 def is_text_file(fname, block=1024):
@@ -30,7 +30,7 @@ def is_text_file(fname, block=1024):
     bool
         ``True`` if the file is probably text, otherwise ``False``.
     """
-    with open(fname, 'r') as fp:
+    with open(fname, 'rb') as fp:
         return is_text(fp.read(block))
 
 
@@ -53,7 +53,8 @@ def is_text(buff):
     if len(buff) == 0:
         return True
 
-    bin_chars = buff.translate(NULL_TRANS, TEXT_CHARACTERS)
+    # bin_chars = buff.translate(NULL_TRANS, TEXT_CHARACTERS)
+    bin_chars = buff.translate(None, TEXT_CHARACTERS)
 
     if len(bin_chars) > len(buff) * 0.3:
         return False
