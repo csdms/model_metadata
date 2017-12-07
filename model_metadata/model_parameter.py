@@ -28,16 +28,6 @@ def setup_yaml_with_canonical_dict():
             'tag:yaml.org,2002:map',
             sorted(data.items(), key=lambda t: t[0]))
 
-    # yaml.add_representer(
-    #     dict,
-    #     lambda self, data:  self.represent_mapping(
-    #         'tag:yaml.org,2002:map',
-    #         sorted(data.items(), key=lambda t: t[0])),
-    #     Dumper=yaml.SafeDumper)
-    # yaml.add_representer(
-    #     dict,
-    #     repr_dict,
-    #     Dumper=yaml.SafeDumper)
     yaml.add_representer(dict, repr_dict, Dumper=yaml.SafeDumper)
 
     # https://stackoverflow.com/a/45004464
@@ -48,6 +38,12 @@ def setup_yaml_with_canonical_dict():
         return dumper.represent_str(data)
 
     yaml.add_representer(str, repr_str, Dumper=yaml.SafeDumper)
+
+    def repr_tuple(dumper, data):
+        return dumper.represent_sequence(
+            'tag:yaml.org,2002:seq', list(data))
+
+    yaml.add_representer(tuple, repr_tuple, Dumper=yaml.SafeDumper)
 
 
 setup_yaml_with_canonical_dict()
@@ -89,7 +85,7 @@ def infer_range(value, range=None):
     >>> infer_range('lorem ipsum')
     """
     if isinstance(value, int):
-        full_range = (-sys.maxsize, -sys.maxsize - 1)
+        full_range = (-sys.maxsize, sys.maxsize - 1)
     elif isinstance(value, float):
         full_range = (float('-inf'), float('inf'))
     else:
@@ -103,19 +99,61 @@ def infer_range(value, range=None):
         return (range[0], range[1])
 
 
+def range_as_tuple(range):
+    if range is None:
+        min_max = (None, None)
+    else:
+        min_max = (range[0], range[1])
+    return min_max
+
+
+def assert_in_bounds(value, bounds):
+    """Assert that a value is within a certain range.
+
+    Parameters
+    ----------
+    value : int or float
+        Value to test.
+    bounds : tuple of int or float
+        Lower and upper bound.
+
+    Raises
+    ------
+    ValueError
+        If the value is outside of the bounds.
+    """
+    try:
+        min_val, max_val = bounds
+    except (TypeError, ValueError):
+        raise ValueError('bounds must be (min, max)')
+
+    if min_val is not None and value < min_val:
+        raise ValueError('value is below lower bound')
+    if max_val is not None and value > max_val:
+        raise ValueError('value is above upper bound')
+
+
 def infer_type(value):
     inferred = str(value)
     try:
         inferred = int(inferred)
     except ValueError:
-        inferred = float(inferred)
+        try:
+            inferred = float(inferred)
+        except ValueError:
+            pass
 
     if isinstance(inferred, str):
-        return 'string'
+        if inferred in ('True', 'False'):
+            return 'bool'
+        else:
+            return 'string'
     elif isinstance(inferred, int):
         return 'int'
     elif isinstance(inferred, float):
         return 'float'
+    else:
+        raise ValueError('unable to infer data type')
 
 
 def parameter_from_dict(d):
@@ -125,8 +163,12 @@ def parameter_from_dict(d):
     if isinstance(value, dict):
         value = d['value']['default']
         kwds.update(d['value'])
-    else:
-        kwds.update(d)
+        if 'choices' in kwds:
+            kwds.setdefault('type', 'choice')
+        elif 'files' in kwds:
+            kwds.setdefault('type', 'file')
+        elif 'true_value' in kwds or 'false_value' in kwds:
+            kwds.setdefault('type', 'bool')
 
     if 'range' in kwds and isinstance(kwds['range'], dict):
         kwds['range'] = (kwds['range']['min'], kwds['range']['max'])
@@ -143,15 +185,88 @@ def parameter_from_dict(d):
         return ChoiceParameter(value, **kwds)
     elif dtype in ('file', ):
         return FileParameter(value, **kwds)
+    elif dtype in ('bool', 'boolean'):
+        return BooleanParameter(value, **kwds)
     else:
         raise ValueError('{dtype}: unknown parameter type'.format(dtype=dtype))
 
 
-class StringParameter(object):
+class ModelParameterMixIn(object):
+
+    def as_dict(self):
+        d = {
+            'description': self.desc,
+            'value': {
+                'default': self.value,
+                'type': self._dtype,
+            }
+        }
+        try:
+            kwds = self._kwds
+        except AttributeError:
+            kwds = []
+        for attr in kwds:
+            d['value'][attr] = getattr(self, attr)
+        return d
+
+    def as_yaml(self):
+        return yaml.safe_dump(self.as_dict(), default_flow_style=False)
+
+    @classmethod
+    def from_yaml(cls, buffer):
+        """Load a parameter from a yaml-formatted string.
+
+        Parameters
+        ----------
+        stream : str or file_like
+            YAML-formatted text.
+
+        Returns
+        -------
+        ModelInputParameter
+            A new instance of a model parameter.
+
+        Examples
+        --------
+        >>> from model_metadata import ModelParameter
+        >>> buffer = '''
+        ... dt:
+        ...   desc: Time step.
+        ...   value: 1.
+        ... '''
+        >>> ModelParameter.from_yaml("dt: )
+        """
+        kwds = yaml.load(buffer)
+        value = kwds.pop('value')
+
+        return cls(value, **kwds)
+
+    @property
+    def type(self):
+        return self._dtype
+
+    def __str__(self):
+        return self.as_yaml()
+
+    def __repr__(self):
+        args = [repr(self.value)]
+        kwds = ['desc']
+        try:
+            kwds.extend(self._kwds)
+        except AttributeError:
+            pass
+        else:
+            for arg in kwds:
+                args.append('{k}={v}'.format(k=arg,
+                                             v=repr(getattr(self, arg))))
+        return '{cls}({args})'.format(
+            cls=self.__class__.__name__, args=', '.join(args))
+
+
+class StringParameter(ModelParameterMixIn):
 
     _dtype = 'str'
 
-    # def __init__(self, value, desc=None):
     def __init__(self, value, **kwds):
         self._value = str(value)
         self._desc = kwds.get('desc', None)
@@ -164,22 +279,17 @@ class StringParameter(object):
     def value(self):
         return self._value
 
-    def as_dict(self):
-        return {
-            'description': self.desc,
-            'value': {
-                'default': self._value,
-                'type': self._dtype,
-            },
-        }
 
+class NumberParameter(StringParameter, ModelParameterMixIn):
 
-class NumberParameter(StringParameter):
+    _kwds = ('units', 'range')
 
-    # def __init__(self, value, desc=None, units=None, range=None):
     def __init__(self, value, **kwds):
-        range = kwds.get('range', None)
+        range = range_as_tuple(kwds.get('range', None))
         units = kwds.get('units', None)
+
+        if range is not None and len(range) != 2:
+            raise ValueError('range must be either None or (min, max)')
 
         StringParameter.__init__(self, value, **kwds)
 
@@ -191,11 +301,10 @@ class NumberParameter(StringParameter):
             if not isinstance(self._value, (int, float)):
                 raise ValueError('value is not a number')
 
-        self._range = infer_range(self._value, range=range)
+        self._range = range
         self._units = units
 
-        if self.value < self.range[0] or self.value > self.range[1]:
-            raise ValueError('default value is outside specified range')
+        assert_in_bounds(self._value, self._range)
 
     @property
     def units(self):
@@ -205,21 +314,12 @@ class NumberParameter(StringParameter):
     def range(self):
         return self._range
 
-    def as_dict(self):
-        d = StringParameter.as_dict(self)
-        d['value']['range'] = {
-            'min': self.range[0],
-            'max': self.range[1],
-        }
-        d['value']['units'] = self.units
-        return d
 
+class ChoiceParameter(StringParameter, ModelParameterMixIn):
 
-class ChoiceParameter(StringParameter):
+    _dtype = 'str'
+    _kwds = ('choices', )
 
-    _dtype = 'choice'
-
-    # def __init__(self, value, desc=None, choices=None, dtype=None):
     def __init__(self, value, **kwds):
         choices = kwds.get('choices', [])
 
@@ -234,51 +334,60 @@ class ChoiceParameter(StringParameter):
     def choices(self):
         return self._choices
 
-    def as_dict(self):
-        d = StringParameter.as_dict(self)
-        d['value']['choices'] = self.choices
-        return d
 
+class BooleanParameter(ChoiceParameter, ModelParameterMixIn):
 
-class FileParameter(StringParameter):
+    _dtype = 'bool'
+    _kwds = ('true_value', 'false_value', )
 
-    _dtype = 'file'
-
-    # def __init__(self, value, desc=None, files=None):
     def __init__(self, value, **kwds):
-        self._files = kwds.get('files', ())
+        kwds.setdefault('choices', [kwds.get('true_value', True),
+                                    kwds.get('false_value', False)])
 
-        StringParameter.__init__(self, value, **kwds)
+        ChoiceParameter.__init__(self, value, **kwds)
 
-        if self.value not in self.files:
-            raise ValueError('default file is not contained in valid files')
+    @property
+    def true_value(self):
+        return self._choices[0]
+
+    @property
+    def false_value(self):
+        return self._choices[1]
+
+    @property
+    def is_true(self):
+        return self.value == self.true_value
+
+
+class FileParameter(ChoiceParameter, ModelParameterMixIn):
+
+    _dtype = 'str'
+    _kwds = ('files', )
+
+    def __init__(self, value, **kwds):
+        kwds['choices'] = kwds.get('files', (value, ))
+
+        ChoiceParameter.__init__(self, value, **kwds)
 
     @property
     def files(self):
-        return self._files
-
-    def as_dict(self):
-        d = StringParameter.as_dict(self)
-        d['value']['files'] = self.files
-        return d
+        return self.choices
 
 
-class FloatParameter(NumberParameter):
+class FloatParameter(NumberParameter, ModelParameterMixIn):
 
     _dtype = 'float'
 
-    # def __init__(self, value, desc=None, units=None, range=None):
     def __init__(self, value, **kwds):
         NumberParameter.__init__(self, value, **kwds)
 
         self._value = float(self._value)
 
 
-class IntParameter(NumberParameter):
+class IntParameter(NumberParameter, ModelParameterMixIn):
 
     _dtype = 'int'
 
-    # def __init__(self, value, desc=None, units=None, range=None):
     def __init__(self, value, **kwds):
         NumberParameter.__init__(self, value, **kwds)
 
@@ -425,8 +534,8 @@ class ModelParameter(object):
         return self.as_yaml()
 
     def __repr__(self):
-        args = self.value
-        kwds = ['{k}={v}'.format(k=k, v=getattr(self, k))
-                for k in ('desc', 'units', 'range', 'dtype')]
-        return 'ModelParameter({args}, {kwds})'.format(args=args,
-                                                       kwds=', '.join(kwds))
+        args = [repr(self.value)]
+        for arg in self._kwds:
+            args.append('{k}={v}'.format(k=arg, v=repr(getattr(self, arg))))
+        return '{cls}({args})'.format(
+            cls=self.__class__, args=', '.join(args))
