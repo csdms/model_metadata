@@ -77,9 +77,9 @@ def infer_range(value, range=None):
     >>> infer_range(1., range=(0., 1.))
     (0.0, 1.0)
 
-    >>> infer_range(1) == (-sys.maxint, sys.maxint - 1)
+    >>> infer_range(1) == (-sys.maxsize, sys.maxsize - 1)
     True
-    >>> infer_range(1, range=(0,)) == (0, sys.maxint - 1)
+    >>> infer_range(1, range=(0,)) == (0, sys.maxsize - 1)
     True
     >>> infer_range(1, range=(0, 10))
     (0, 10)
@@ -87,7 +87,7 @@ def infer_range(value, range=None):
     >>> infer_range('lorem ipsum')
     """
     if isinstance(value, int):
-        full_range = (-sys.maxint, sys.maxint - 1)
+        full_range = (-sys.maxsize, sys.maxsize - 1)
     elif isinstance(value, float):
         full_range = (float('-inf'), float('inf'))
     else:
