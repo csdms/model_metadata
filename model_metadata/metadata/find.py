@@ -3,6 +3,8 @@ import os
 
 from scripting.contexts import cd
 
+from ..errors import MetadataNotFoundError
+
 
 _METADATA_FILES = {
     'api.yaml', 'api.yml',
@@ -11,7 +13,6 @@ _METADATA_FILES = {
     'wmt.yaml', 'wmt.yml',
     'run.yaml', 'run.yml',
 }
-
 
 def is_metadata_file(fname):
     """Check if a file is a model metadat file.
@@ -42,8 +43,14 @@ def find_metadata_files(datadir):
     list of str
         Paths to all metadata files.
     """
-    with cd(datadir, create=False):
-        found = [fname for fname in _METADATA_FILES if os.path.isfile(fname)]
+    try:
+        with cd(datadir, create=False):
+            found = [fname for fname in _METADATA_FILES if os.path.isfile(fname)]
+    except OSError as err:
+        if err.errno == 2:
+            raise MetadataNotFoundError(datadir)
+        else:
+            raise
 
     return [os.path.join(datadir, fname) for fname in found]
 
