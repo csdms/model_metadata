@@ -10,7 +10,7 @@ from .metadata import find_model_data_files
 from .model_data_files import format_template_file, FileTemplate
 
 
-TEXT_CHARACTERS = ''.join(map(chr, range(32, 127)) + list("\n\r\t\b"))
+TEXT_CHARACTERS = ''.join(list(map(chr, range(32, 127))) + list("\n\r\t\b"))
 NULL_TRANS = string.maketrans("", "")
 
 
