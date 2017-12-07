@@ -3,10 +3,7 @@ import os
 import sys
 from collections import OrderedDict
 
-try:
-    import yaml
-except ImportError:
-    pass
+import yaml
 
 
 def setup_yaml_with_canonical_dict():
@@ -70,26 +67,27 @@ def infer_range(value, range=None):
 
     Examples
     --------
-    >>> from model_metadata import infer_range
+    >>> from model_metadata.model_parameter import infer_range
+    >>> import sys
 
     >>> infer_range(1.)
     (-inf, inf)
     >>> infer_range(1., range=(0.,))
-    (0., inf)
+    (0.0, inf)
     >>> infer_range(1., range=(0., 1.))
-    (0., 1.)
+    (0.0, 1.0)
 
-    >>> infer_range(1)
-    (-inf, inf)
-    >>> infer_range(1, range=(0,))
-    (0, inf)
+    >>> infer_range(1) == (-sys.maxint, sys.maxint - 1)
+    True
+    >>> infer_range(1, range=(0,)) == (0, sys.maxint - 1)
+    True
     >>> infer_range(1, range=(0, 10))
     (0, 10)
 
     >>> infer_range('lorem ipsum')
     """
     if isinstance(value, int):
-        full_range = (-sys.maxsize, -sys.maxsize - 1)
+        full_range = (-sys.maxint, sys.maxint - 1)
     elif isinstance(value, float):
         full_range = (float('-inf'), float('inf'))
     else:
@@ -366,7 +364,6 @@ class ModelParameter(object):
         ...   desc: Time step.
         ...   value: 1.
         ... '''
-        >>> ModelParameter.from_yaml("dt: )
         """
         import yaml
 

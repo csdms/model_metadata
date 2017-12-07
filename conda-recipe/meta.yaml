@@ -1,0 +1,47 @@
+{% set name = "model_metadata" %}
+{% set version = "0.1" %}
+
+
+package:
+  name: {{ name }}
+  version: {{ version }}
+
+source:
+  path: ..
+
+requirements:
+  build:
+    - python
+    - setuptools
+    - pyyaml
+    - six
+    - scripting
+
+  run:
+    - python
+    - numpy
+    - six
+    - pyyaml
+    - scripting
+
+test:
+  requires:
+    - nose
+    - coverage [linux]
+  commands:
+    - nosetests --with-doctest --with-coverage --cover-package=model_metadata model_metadata [linux]
+    - nosetests --with-doctest model_metadata [not linux]
+
+build:
+  number: 0
+  script: python setup.py install --single-version-externally-managed --record record.txt
+
+about:
+  home: http://github.com/csdms/model_metadata
+  license: MIT
+  license_file: LICENSE
+  summary: The CSDMS Python tools for model metadata
+  description: |
+    Tools for working with model metadata and staging model simulations.
+  doc_url: http://model_metadata.readthedocs.org
+  dev_url: http://github.com/csdms/model_metadata
