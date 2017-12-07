@@ -93,7 +93,7 @@ class FileSystemLoader(object):
         sources = (os.path.relpath(fn, self.base) for fn in self.sources)
         with cd(destdir, create=True):
             for relpath in sources:
-                self.stage(relpath)
+                self.stage(relpath, **kwds)
 
     def stage(self, relpath, **kwds):
         src = os.path.join(self.base, relpath)
