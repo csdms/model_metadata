@@ -4,7 +4,7 @@ from __future__ import print_function
 import sys
 import argparse
 
-from ..model_metadata import ModelMetadata
+from ..modelmetadata import ModelMetadata
 
 
 def main():
