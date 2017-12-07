@@ -7,7 +7,7 @@ env:
   - CONDA_PREFIX=$HOME/miniconda
   - MINICONDA_URL_BASE="https://repo.continuum.io/miniconda/Miniconda3-latest"
   - TRAVIS_PYTHON_VERSION="2.7"
-  - secure: KEm0QwqwPnYuwk1sZ9tjUXWD+ZqDXgJ2DL25Iv77s4KqXfDkrQ+Q2JkWRQgN9IWRpsQf1/SorIeZzCkCXy+GkErAqJDGk/EVnpzdLitZ1caZgKj2H7W3cMZ51qZh3UQrxwo+H9FW6PaltCezkOIk5Q/VdewlSYny7dqpoYjsc/o=
+  - secure: loIxrGwXGcMBQK708SoToTQOsk02E8hAGuUfRxXYnUmTVzRaLlSVgK74WMPgHhg+WqK28wh62OAbqXajzq9EmToh3za/Rt47wPe5bz6stlEIsWyvULHKhIkjAt8Zh5PireCO1tCmCS2wlqwOkACJXDv4d1lkRxhsdvfOMv1alkMoMBxKxfj8OEnUS4UxayQVAmE8akO9E2DYTjQfYdxf0SZvz0MM7zV8h9Twq2R6tcEikbfSEkB6w2aGYS2ptObzVpYVdY9rZyYC+Z9eIOWHhPpysxcZdDByOIVK5iAf2P8Qh/XRT5gZol20lf5dnklx8f0iSamzqoppTqbavoHpG4GIrWGb8R0TLBkJU1eQ/TK0Pqks0CcaoP3JY7vhVp4GvqKwoF7Cl18YcGE9WDivnjrzEKN9YlkZQJrup7aQnktGqs6+fh36hsVOrZoWRSHZSIuX2dl8tcQmJgYagNwxfi6FMSfEWjlMa1+rRovUzjUt1I/2aoHah/vPYpdLLe7QxxsZG4x9iagEU+H9qmjdI0XHDtsJDLXJOYJVKPUWG/+CgIp6FksEXJQ1H+mhHpVX/mca5HrmGIcEmqEO3aL3lUmLbEz6LV+SJ6xD/VkiMjt4vSVPqXAy9O8EmdBlPPDepGgW785fvtTFIMABo35A/t3XI4Vg4VMsv/iPFOm1fII=
 sudo: false
 before_install:
 - |
@@ -36,7 +36,8 @@ install:
 script:
 - conda build ./conda-recipe --no-test --old-build-string
 - conda install model_metadata nose coverage --use-local
-- nosetests --detailed-errors --exclude=examples --with-doctest --with-coverage --cover-package=model_metadata --verbosity=2 model_metadata
+- nosetests --detailed-errors --exclude=examples --with-doctest --with-coverage --cover-package=model_metadata
+  --verbosity=2 model_metadata
 after_success:
 - |
   if [[ $TRAVIS_OS_NAME == "linux" ]]; then
@@ -45,5 +46,5 @@ after_success:
   fi
 - curl https://raw.githubusercontent.com/csdms/ci-tools/master/anaconda_upload.py
   > $HOME/anaconda_upload.py
-- echo $ANACONDA_TOKEN | python $HOME/anaconda_upload.py ./conda-recipe --old-build-string --channel=main --org=csdms
-  --token=-
+- echo $ANACONDA_TOKEN | python $HOME/anaconda_upload.py ./conda-recipe --old-build-string
+  --channel=main --org=csdms --token=-
