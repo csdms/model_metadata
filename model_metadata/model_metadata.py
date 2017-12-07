@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 import os
 
+import six
 import yaml
 
 from .metadata.find import find_metadata_files
@@ -11,6 +12,28 @@ from .model_info import ModelInfo
 
 
 setup_yaml_with_canonical_dict()
+
+
+def normalize_run_section(run):
+    normed = {
+        'config_file': {
+            'path': None,
+            'contents': None,
+        }
+    }
+
+    if run is None:
+        pass
+    elif 'config_file' not in run:
+        pass
+    elif isinstance(run['config_file'], six.string_types):
+        normed['config_file']['path'] = run['config_file']
+    else:
+        for key in ('path', 'contents'):
+            normed['config_file'][key] = run['config_file'].get(key, None)
+
+    return normed
+
 
 class ModelMetadata(object):
 
@@ -23,6 +46,7 @@ class ModelMetadata(object):
 
         self._meta['info'].setdefault('name', self.api['name'])
         self._meta['info'] = ModelInfo.norm(self._meta['info'])
+        self._meta['run'] = normalize_run_section(self._meta.get('run', None))
 
         params = self._meta.pop('parameters', {})
         self._meta['parameters'] = {}
@@ -30,7 +54,7 @@ class ModelMetadata(object):
             try:
                 self._meta['parameters'][name] = parameter_from_dict(p).as_dict()
             except ValueError:
-                raise ValueError('{name}: unable to load paramter'.format(name=name))
+                raise ValueError('{name}: unable to load parameter'.format(name=name))
 
     @property
     def base(self):
@@ -39,6 +63,10 @@ class ModelMetadata(object):
     @property
     def meta(self):
         return self._meta
+
+    @property
+    def name(self):
+        return self.info['name']
 
     @property
     def api(self):
@@ -54,7 +82,7 @@ class ModelMetadata(object):
 
     @property
     def run(self):
-        return self._meta.get('run', {})
+        return self._meta['run']
 
     def dump(self):
         return yaml.safe_dump(self.meta)
