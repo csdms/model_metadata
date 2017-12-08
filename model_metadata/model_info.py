@@ -150,6 +150,8 @@ class ModelInfo(object):
 
         self._name = name
 
+        version = str(version)
+
         self._authors = author and tuple(norm_authors(author)) or ()
         self._cite_as = cite_as and tuple(cite_as) or ()
         self._email = email and validate_email(email) or None

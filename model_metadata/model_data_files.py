@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 import os
 import string
+import tempfile
 
 from scripting.contexts import cd
 
@@ -54,6 +55,31 @@ class FileTemplate(object):
 
         with open(dest, 'w') as fp:
             fp.write(self.render(**kwds))
+
+    @staticmethod
+    def format(file_like, **kwds):
+        try:
+            template = file_like.read()
+        except AttributeError:
+            template = file_like
+        return sub_parameters(template, **kwds)
+
+    @staticmethod
+    def write(file_like, dest, **kwds):
+        if os.path.isfile(dest):
+            if file_like:
+                raise ValueError(
+                    '{dest}: destination already exists'.format(dest=dest))
+            else:
+                return dest
+        elif os.path.isdir(dest):
+            fid, dest = tempfile.mkstemp(dir=dest, prefix='.', suffix='.txt')
+            os.close(fid)
+
+        with open(dest, 'w') as fp:
+            fp.write(FileTemplate.format(file_like, **kwds))
+
+        return dest
 
 
 def format_template_file(src, dest, **kwds):
