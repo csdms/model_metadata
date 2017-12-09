@@ -175,7 +175,7 @@ def parameter_from_dict(d):
 
     if dtype in ('float', 'double'):
         return FloatParameter(value, **kwds)
-    elif dtype in ('int', 'integer'):
+    elif dtype in ('int', 'integer', 'long'):
         return IntParameter(value, **kwds)
     elif dtype in ('str', 'string'):
         return StringParameter(value, **kwds)
