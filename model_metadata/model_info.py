@@ -212,6 +212,8 @@ class ModelInfo(object):
 
     @staticmethod
     def norm(params):
+        if params.pop('initialize_args', None):
+            warnings.warn("ignoring 'initialize_args' in info section")
         name = params.pop('name', '?')
         return ModelInfo(name, **params).as_dict()
 
