@@ -4,7 +4,7 @@ import warnings
 from pprint import pformat
 
 import six
-from pkg_resources import parse_version, SetuptoolsLegacyVersion
+from packaging.version import Version, InvalidVersion
 import yaml
 
 from .metadata.load import load_meta_section
@@ -112,10 +112,10 @@ def validate_doi(doi):
 
 def validate_version(version):
     """Validate a version string."""
-    v = parse_version(version)
-    if isinstance(v, SetuptoolsLegacyVersion):
-        warnings.warn(
-            '{v}: version string does not follow PEP440'.format(v=v))
+    try:
+        Version(version)
+    except InvalidVersion:
+        warnings.warn('{v}: version string does not follow PEP440'.format(v=v))
     return version
 
 
