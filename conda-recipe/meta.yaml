@@ -12,6 +12,7 @@ source:
 requirements:
   build:
     - python
+    - packaging
     - setuptools
     - pyyaml
     - six
@@ -19,6 +20,7 @@ requirements:
 
   run:
     - python
+    - packaging
     - numpy
     - six
     - pyyaml
