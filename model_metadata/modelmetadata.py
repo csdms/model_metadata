@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 import os
+import warnings
 
 import six
 import yaml
@@ -50,11 +51,20 @@ class ModelMetadata(object):
 
         params = self._meta.pop('parameters', {})
         self._meta['parameters'] = {}
-        for name, p in params.items():
+
+        public = (name for name in params if not name.startswith('_'))
+        for name in public:
             try:
-                self._meta['parameters'][name] = parameter_from_dict(p).as_dict()
+                param = parameter_from_dict(params[name]).as_dict()
             except ValueError:
                 raise ValueError('{name}: unable to load parameter'.format(name=name))
+            else:
+                self._meta['parameters'][name] = param
+
+        private = (name for name in params if name.startswith('_'))
+        for name in private:
+            warnings.warn('{name}: ignoring private attribute in parameters section'.format(name=name))
+
 
     @property
     def base(self):
