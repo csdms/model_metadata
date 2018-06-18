@@ -50,6 +50,13 @@ def load_meta_section(path, section):
     return meta_section
 
 
+def merge_documents(documents):
+    merged = {}
+    for document in documents:
+        merged.update(document)
+    return merged
+
+
 def load_yaml_file(file_like):
     try:
         contents = file_like.read()
@@ -61,7 +68,8 @@ def load_yaml_file(file_like):
             contents = None
 
     if contents:
-        return yaml.load(contents)
+        return merge_documents(yaml.load_all(contents))
+        # return yaml.load(contents)
     else:
         return None
 

@@ -16,14 +16,16 @@ requirements:
     - setuptools
     - pyyaml
     - six
+    - jinja2
     - scripting
 
   run:
     - python
     - packaging
     - numpy
-    - six
     - pyyaml
+    - six
+    - jinja2
     - scripting
 
 test:

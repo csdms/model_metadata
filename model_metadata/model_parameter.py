@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 import os
 import sys
+import re
 from collections import OrderedDict
 
 import yaml
@@ -42,6 +43,17 @@ def setup_yaml_with_canonical_dict():
 
     yaml.add_representer(tuple, repr_tuple, Dumper=yaml.SafeDumper)
 
+    # loader = yaml.SafeLoader
+    yaml.add_implicit_resolver(
+        u'tag:yaml.org,2002:float',
+        re.compile(u'''^(?:
+         [-+]?(?:[0-9][0-9_]*)\\.[0-9_]*(?:[eE][-+]?[0-9]+)?
+        |[-+]?(?:[0-9][0-9_]*)(?:[eE][-+]?[0-9]+)
+        |\\.[0-9_]+(?:[eE][-+][0-9]+)?
+        |[-+]?[0-9][0-9_]*(?::[0-5]?[0-9])+\\.[0-9_]*
+        |[-+]?\\.(?:inf|Inf|INF)
+        |\\.(?:nan|NaN|NAN))$''', re.X),
+        list(u'-+0123456789.'))
 
 setup_yaml_with_canonical_dict()
 
@@ -126,9 +138,9 @@ def assert_in_bounds(value, bounds):
         raise ValueError('bounds must be (min, max)')
 
     if min_val is not None and value < min_val:
-        raise ValueError('value is below lower bound')
+        raise ValueError('value is below lower bound ({val} < {bound})'.format(val=value, bound=min_val))
     if max_val is not None and value > max_val:
-        raise ValueError('value is above upper bound')
+        raise ValueError('value is above upper bound ({val} > {bound})'.format(val=value, bound=max_val))
 
 
 def infer_type(value):
