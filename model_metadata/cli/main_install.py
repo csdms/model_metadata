@@ -7,11 +7,8 @@ import argparse
 import textwrap
 import shutil
 
-from jinja2 import FileSystemLoader, Environment
-from scripting.contexts import cd
-
-# from ..model_setup import FileSystemLoader
 from ..modelmetadata import ModelMetadata
+from ..utils import install_mmd
 
 
 def configure_parser_mmd_install(sub_parsers=None):
@@ -42,13 +39,33 @@ def configure_parser_mmd_install(sub_parsers=None):
         help='path to model metadata files',
     )
     p.add_argument(
+        'destination',
+        nargs='?',
+        help='path to install model metadata files into',
+    )
+    p.add_argument(
         '--prefix',
         default=sys.prefix,
         help='where to install files',
     )
     p.add_argument(
-        '--model',
+        '--develop',
+        action='store_true',
+        help='Install files in "development mode"',
+    )
+    p.add_argument(
+        '--model-name',
         help='name of the model',
+    )
+    p.add_argument(
+        '--dry-run',
+        action='store_true',
+        help='only display what would have been done',
+    )
+    p.add_argument(
+        '--silent',
+        action='store_true',
+        help='suppress output',
     )
 
     p.set_defaults(func=execute)
@@ -57,20 +74,17 @@ def configure_parser_mmd_install(sub_parsers=None):
 
 
 def execute(args):
-    prefix = args.prefix
+    if args.destination is None:
+        prefix = args.prefix
+        model_name = args.model_name or ModelMetadata(args.source).api['name']
+        dest = os.path.join(prefix, 'share', 'csdms', model_name)
+    else:
+        dest = args.destination
 
-    model = args.model or ModelMetadata(args.source).api['name']
-
-    # dest = os.path.join(prefix, 'share', 'csdms', args.model)
-    dest = os.path.join(prefix, 'share', 'csdms', model)
-
-    # FileSystemLoader(args.source).stage_all(dest)
-    env = Environment(loader=FileSystemLoader(args.source))
-    with cd(dest):
-        for fname in env.list_templates():
-            with cd(os.path.dirname(fname) or '.', create=True):
-                pass
-            shutil.copy2(os.path.join(args.source, fname), fname)
+    install_mmd(os.path.abspath(args.source),
+                os.path.abspath(dest),
+                develop=args.develop, silent=args.silent,
+                dry_run=args.dry_run, clobber=True)
 
 
 def main():
