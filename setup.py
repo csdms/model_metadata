@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-from model_metadata import __version__
+import versioneer
 
 
 def read_requirements():
@@ -19,7 +19,7 @@ def read_requirements():
 
 
 setup(name='model_metadata',
-      version=__version__,
+      version=versioneer.get_version(),
       description='Model Metadata',
       author='Eric Hutton',
       author_email='huttone@colorado.edu',
@@ -27,6 +27,7 @@ setup(name='model_metadata',
       install_requires=read_requirements(),
       setup_requires=['setuptools', ],
       packages=find_packages(),
+      cmdclass=versioneer.get_cmdclass(),
       entry_points={
           'console_scripts': [
               'mmd=model_metadata.cli.main:main',
