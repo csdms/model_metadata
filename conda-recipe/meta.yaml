@@ -18,6 +18,8 @@ requirements:
     - six
     - jinja2
     - scripting
+    - packaging
+    - binaryornot
 
   run:
     - python
@@ -27,14 +29,14 @@ requirements:
     - six
     - jinja2
     - scripting
+    - packaging
+    - binaryornot
 
 test:
   requires:
-    - nose
-    - coverage [linux]
+    - pytest
   commands:
-    - nosetests --with-doctest --with-coverage --cover-package=model_metadata model_metadata [linux]
-    - nosetests --with-doctest model_metadata [not linux]
+    - pytest --pyargs model_metadata --doctest-modules -o doctest_optionflags="NORMALIZE_WHITESPACE IGNORE_EXCEPTION_DETAIL ALLOW_UNICODE"
 
 build:
   number: 0
