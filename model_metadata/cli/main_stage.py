@@ -20,39 +20,24 @@ from ..errors import MetadataNotFoundError
 def configure_parser_mmd_stage(sub_parsers=None):
     help = "stage model data files"
 
-    example = textwrap.dedent("""
+    example = textwrap.dedent(
+        """
 
     Examples:
 
     mmd stage Child
 
-    """)
+    """
+    )
     if sub_parsers is None:
         p = argparse.ArgumentParser(
-            description=help,
-            fromfile_prefix_chars='@',
-            epilog=example,
+            description=help, fromfile_prefix_chars="@", epilog=example
         )
     else:
-        p = sub_parsers.add_parser(
-            'stage',
-            help=help,
-            description=help,
-            epilog=example,
-        )
-    p.add_argument(
-        'model',
-        help='model to stage',
-    )
-    p.add_argument(
-        'dest',
-        help='where to stage files',
-    )
-    p.add_argument(
-        '--jinja',
-        action='store_true',
-        help='use jinja templates',
-    )
+        p = sub_parsers.add_parser("stage", help=help, description=help, epilog=example)
+    p.add_argument("model", help="model to stage")
+    p.add_argument("dest", help="where to stage files")
+    p.add_argument("--jinja", action="store_true", help="use jinja templates")
 
     p.set_defaults(func=execute)
 
@@ -63,23 +48,25 @@ def execute(args):
     if os.path.isdir(args.model):
         mmd = args.model
     else:
-        mmd = os.path.join(sys.prefix, 'share', 'csdms', args.model)
+        mmd = os.path.join(sys.prefix, "share", "csdms", args.model)
 
     if not os.path.isdir(mmd):
         raise MetadataNotFoundError(args.model)
 
     defaults = dict()
     for param, item in ModelMetadata(mmd).parameters.items():
-        defaults[param] = item['value']['default']
+        defaults[param] = item["value"]["default"]
 
     if args.jinja:
         env = Environment(loader=FileSystemLoader(mmd))
         with cd(args.dest):
-            for fname in env.list_templates(filter_func=lambda f: not is_metadata_file(f)):
-                with cd(os.path.dirname(fname) or '.', create=True):
+            for fname in env.list_templates(
+                filter_func=lambda f: not is_metadata_file(f)
+            ):
+                with cd(os.path.dirname(fname) or ".", create=True):
                     pass
                 if is_text_file(os.path.join(mmd, fname)):
-                    with open(fname, 'w') as fp:
+                    with open(fname, "w") as fp:
                         fp.write(env.get_template(fname).render(**defaults))
                 else:
                     shutil.copy2(os.path.join(mmd, fname), fname)

@@ -15,7 +15,9 @@ setup_yaml_with_canonical_dict()
 
 
 EMAIL_REGEX = r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
-URL_REGEX = r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"
+URL_REGEX = (
+    r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"
+)
 DOI_REGEX = r'\b(10[.][0-9]{4,}(?:[.][0-9]+)*/(?:(?!["&\'<>])\S)+)\b'
 
 
@@ -46,16 +48,16 @@ def norm_authors(authors):
     ['John Cleese', 'Terry Gilliam', 'Eric Idle']
     """
     if isinstance(authors, six.string_types):
-        authors = authors.split(' and ')
+        authors = authors.split(" and ")
 
     normed = []
     for author in authors:
         try:
-            last, first = author.split(',')
+            last, first = author.split(",")
         except ValueError:
             pass
         else:
-            author = ' '.join([first.strip(), last.strip()])
+            author = " ".join([first.strip(), last.strip()])
         finally:
             normed.append(author)
 
@@ -92,21 +94,21 @@ def validate_email(email):
     ValueError: Terry.Jones@monty: invalid email address
     """
     if not re.match(EMAIL_REGEX, email):
-        raise ValueError('{email}: invalid email address'.format(email=email))
+        raise ValueError("{email}: invalid email address".format(email=email))
     return email
 
-    
+
 def validate_url(url):
     """Validate a URL string."""
     if not re.match(URL_REGEX, url):
-        raise ValueError('{url}: invalid URL'.format(url=url))
+        raise ValueError("{url}: invalid URL".format(url=url))
     return url
 
-    
+
 def validate_doi(doi):
     """Validate a DOI string."""
     if not re.match(DOI_REGEX, doi):
-        raise ValueError('{doi}: invalid DOI'.format(doi=doi))
+        raise ValueError("{doi}: invalid DOI".format(doi=doi))
     return doi
 
 
@@ -115,7 +117,7 @@ def validate_version(version):
     try:
         Version(version)
     except InvalidVersion:
-        warnings.warn('{v}: version string does not follow PEP440'.format(v=v))
+        warnings.warn("{v}: version string does not follow PEP440".format(v=v))
     return version
 
 
@@ -123,14 +125,13 @@ def validate_is_str(s):
     if isinstance(s, six.string_types):
         return s
     else:
-        raise TypeError('not a string')
+        raise TypeError("not a string")
 
 
 def object_properties(obj):
     import inspect
 
-    properties = inspect.getmembers(obj.__class__,
-                                    lambda o: isinstance(o, property))
+    properties = inspect.getmembers(obj.__class__, lambda o: isinstance(o, property))
 
     props = []
     for name, _ in properties:
@@ -142,9 +143,18 @@ class ModelInfo(object):
 
     """Information about a model."""
 
-    def __init__(self, name, author=None, email=None, version=None,
-                 license=None, doi=None, url=None, summary=None,
-                 cite_as=None):
+    def __init__(
+        self,
+        name,
+        author=None,
+        email=None,
+        version=None,
+        license=None,
+        doi=None,
+        url=None,
+        summary=None,
+        cite_as=None,
+    ):
         if isinstance(cite_as, six.string_types):
             cite_as = [cite_as]
 
@@ -202,26 +212,26 @@ class ModelInfo(object):
 
     @classmethod
     def from_dict(cls, params):
-        name = params.pop('name', '?')
+        name = params.pop("name", "?")
         return cls(name, **params)
 
     @classmethod
     def from_path(cls, path):
-        params = load_meta_section(path, 'info')
+        params = load_meta_section(path, "info")
         return cls.from_dict(params)
 
     @staticmethod
     def norm(params):
-        for key in ('initialize_args', 'class', 'id'):
+        for key in ("initialize_args", "class", "id"):
             if params.pop(key, None):
                 warnings.warn("ignoring '{0}' in info section".format(key))
-        name = params.pop('name', '?')
+        name = params.pop("name", "?")
         return ModelInfo(name, **params).as_dict()
 
     def to_yaml(self):
         d = self.as_dict()
-        d['authors'] = list(d.get('authors', []))
-        d['cite_as'] = list(d.get('cite_as', []))
+        d["authors"] = list(d.get("authors", []))
+        d["cite_as"] = list(d.get("cite_as", []))
         return yaml.safe_dump(d, default_flow_style=False)
 
     def __str__(self):

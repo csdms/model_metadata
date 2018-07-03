@@ -11,7 +11,7 @@ from .metadata import find_model_data_files
 from .model_data_files import format_template_file, FileTemplate
 
 
-TEXT_CHARACTERS = ''.join(list(map(chr, range(32, 127))) + list("\n\r\t\b"))
+TEXT_CHARACTERS = "".join(list(map(chr, range(32, 127))) + list("\n\r\t\b"))
 # NULL_TRANS = string.maketrans("", "")
 
 
@@ -31,7 +31,7 @@ def is_text_file(fname, block=1024):
     bool
         ``True`` if the file is probably text, otherwise ``False``.
     """
-    with open(fname, 'rb') as fp:
+    with open(fname, "rb") as fp:
         return is_text(fp.read(block))
 
 
@@ -48,7 +48,7 @@ def is_text(buff):
     bool
         ``True`` if the buffer is probably text, otherwise ``False``.
     """
-    if '\0' in buff:
+    if "\0" in buff:
         return False
 
     if len(buff) == 0:
@@ -59,7 +59,7 @@ def is_text(buff):
 
     if len(bin_chars) > len(buff) * 0.3:
         return False
-    
+
     return True
 
 
@@ -78,7 +78,6 @@ def mkdir_p(path):
 
 
 class FileSystemLoader(object):
-
     def __init__(self, searchpath):
         self._base = searchpath
         self._files = find_model_data_files(searchpath)
