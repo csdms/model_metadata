@@ -37,10 +37,7 @@ install:
 - source activate _testing
 - conda install -q conda-build anaconda-client sphinx
 script:
-- conda build ./conda-recipe --no-test --old-build-string
-- conda install model_metadata nose coverage --use-local
-- nosetests --detailed-errors --exclude=examples --with-doctest --with-coverage --cover-package=model_metadata
-  --verbosity=2 model_metadata
+- conda build ./conda-recipe --old-build-string
 after_success:
 - |
   if [[ $TRAVIS_OS_NAME == "linux" ]]; then
