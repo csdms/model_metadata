@@ -5,6 +5,7 @@ import errno
 import shutil
 
 from scripting.contexts import cd
+from binaryornot.check import is_binary
 
 from .metadata import find_model_data_files
 from .model_data_files import format_template_file, FileTemplate
@@ -108,7 +109,7 @@ class FileSystemLoader(object):
 
         if os.path.isdir(src):
             mkdir_p(relpath)
-        elif is_text_file(src):
-            FileTemplate(src).to_file(relpath, **kwds)
-        else:
+        elif is_binary(src):
             shutil.copy2(src, relpath)
+        else:
+            FileTemplate(src).to_file(relpath, **kwds)
