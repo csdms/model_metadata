@@ -13,42 +13,35 @@ from .. import __version__
 def configure_parser_mmd(sub_parsers=None):
     help = "Model metadata tools"
 
-    example = textwrap.dedent("""
+    example = textwrap.dedent(
+        """
 
     Examples:
 
     mmd --version
 
-    """)
+    """
+    )
     if sub_parsers is None:
         p = argparse.ArgumentParser(
-            description=help,
-            fromfile_prefix_chars='@',
-            epilog=example,
+            description=help, fromfile_prefix_chars="@", epilog=example
         )
     else:
-        p = sub_parsers.add_parser(
-            'mmd',
-            help=help,
-            description=help,
-            epilog=example,
-        )
+        p = sub_parsers.add_parser("mmd", help=help, description=help, epilog=example)
     # p.add_argument(
     #     'name',
     #     help='name of model',
     # )
 
     p.add_argument(
-        '-V', '--version',
-        action='version',
-        version='mmd {0}'.format(__version__),
-        help='Show the mmd version number and exit.'
+        "-V",
+        "--version",
+        action="version",
+        version="mmd {0}".format(__version__),
+        help="Show the mmd version number and exit.",
     )
 
-    sub_parsers = p.add_subparsers(
-        metavar='command',
-        dest='cmd',
-    )
+    sub_parsers = p.add_subparsers(metavar="command", dest="cmd")
     sub_parsers.required = True
     # p.set_defaults(func=execute)
 

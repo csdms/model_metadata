@@ -9,12 +9,11 @@ from scripting.contexts import cd
 class SafeFormatter(string.Formatter):
     def get_field(self, field_name, args, kwargs):
         try:
-            val = super(SafeFormatter, self).get_field(field_name, args,
-                                                       kwargs)
+            val = super(SafeFormatter, self).get_field(field_name, args, kwargs)
         except (KeyError, AttributeError):
-            val = '{' + field_name + '}', field_name 
+            val = "{" + field_name + "}", field_name
 
-        return val 
+        return val
 
     def format_field(self, value, spec):
         try:
@@ -40,7 +39,7 @@ class FileTemplate(object):
         return self._tail
 
     def render(self, **kwds):
-        with open(self.path, 'r') as fp:
+        with open(self.path, "r") as fp:
             template = fp.read()
         return self._formatter.format(template, **kwds)
 
@@ -50,10 +49,10 @@ class FileTemplate(object):
             dest = os.path.join(dest, self.tail)
 
         (base, ext) = os.path.splitext(dest)
-        if ext == '.tmpl':
+        if ext == ".tmpl":
             dest = base
 
-        with open(dest, 'w') as fp:
+        with open(dest, "w") as fp:
             fp.write(self.render(**kwds))
 
     @staticmethod
@@ -68,15 +67,14 @@ class FileTemplate(object):
     def write(file_like, dest, **kwds):
         if os.path.isfile(dest):
             if file_like:
-                raise ValueError(
-                    '{dest}: destination already exists'.format(dest=dest))
+                raise ValueError("{dest}: destination already exists".format(dest=dest))
             else:
                 return dest
         elif os.path.isdir(dest):
-            fid, dest = tempfile.mkstemp(dir=dest, prefix='.', suffix='.txt')
+            fid, dest = tempfile.mkstemp(dir=dest, prefix=".", suffix=".txt")
             os.close(fid)
 
-        with open(dest, 'w') as fp:
+        with open(dest, "w") as fp:
             fp.write(FileTemplate.format(file_like, **kwds))
 
         return dest
@@ -101,14 +99,14 @@ def format_template_file(src, dest, **kwds):
         dest = os.path.join(dest, fname)
 
     (base, ext) = os.path.splitext(dest)
-    if ext == '.tmpl':
+    if ext == ".tmpl":
         dest = base
 
     with cd(srcdir):
-        with open(fname, 'r') as fp:
+        with open(fname, "r") as fp:
             template = fp.read()
 
-        with open(dest, 'w') as fp:
+        with open(dest, "w") as fp:
             fp.write(sub_parameters(template, **kwds))
 
 

@@ -7,12 +7,18 @@ from ..errors import MetadataNotFoundError
 
 
 _METADATA_FILES = {
-    'api.yaml', 'api.yml',
-    'parameters.yaml', 'parameters.yml',
-    'info.yaml', 'info.yml',
-    'wmt.yaml', 'wmt.yml',
-    'run.yaml', 'run.yml',
+    "api.yaml",
+    "api.yml",
+    "parameters.yaml",
+    "parameters.yml",
+    "info.yaml",
+    "info.yml",
+    "wmt.yaml",
+    "wmt.yml",
+    "run.yaml",
+    "run.yml",
 }
+
 
 def is_metadata_file(fname):
     """Check if a file is a model metadat file.
