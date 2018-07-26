@@ -79,8 +79,8 @@ def mkdir_p(path):
 
 class FileSystemLoader(object):
     def __init__(self, searchpath):
-        self._base = searchpath
-        self._files = find_model_data_files(searchpath)
+        self._base = os.path.abspath(searchpath)
+        self._files = find_model_data_files(self._base)
 
     @property
     def base(self):
