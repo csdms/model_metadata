@@ -54,7 +54,8 @@ def execute(args):
         raise MetadataNotFoundError(args.model)
 
     defaults = dict()
-    for param, item in ModelMetadata(mmd).parameters.items():
+    meta = ModelMetadata(mmd)
+    for param, item in meta.parameters.items():
         defaults[param] = item["value"]["default"]
 
     if args.jinja:
@@ -72,6 +73,10 @@ def execute(args):
                     shutil.copy2(os.path.join(mmd, fname), fname)
     else:
         OldFileSystemLoader(mmd).stage_all(args.dest, **defaults)
+
+    config_file = meta.run["config_file"]["path"]
+    if config_file:
+        print(config_file, file=sys.stdout)
 
 
 def main():
