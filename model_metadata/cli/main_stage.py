@@ -10,7 +10,7 @@ import shutil
 from jinja2 import Environment, FileSystemLoader
 from scripting.contexts import cd
 
-from ..model_setup import FileSystemLoader as OldFileSystemLoader
+from ..model_setup import FileSystemLoader, OldFileSystemLoader
 from ..model_setup import is_text_file
 from ..modelmetadata import ModelMetadata
 from ..metadata.find import is_metadata_file
@@ -37,7 +37,7 @@ def configure_parser_mmd_stage(sub_parsers=None):
         p = sub_parsers.add_parser("stage", help=help, description=help, epilog=example)
     p.add_argument("model", help="model to stage")
     p.add_argument("dest", help="where to stage files")
-    p.add_argument("--jinja", action="store_true", help="use jinja templates")
+    p.add_argument("--old-style-templates", action="store_true", help="use old-style templates")
 
     p.set_defaults(func=execute)
 
@@ -58,21 +58,10 @@ def execute(args):
     for param, item in meta.parameters.items():
         defaults[param] = item["value"]["default"]
 
-    if args.jinja:
-        env = Environment(loader=FileSystemLoader(mmd))
-        with cd(args.dest):
-            for fname in env.list_templates(
-                filter_func=lambda f: not is_metadata_file(f)
-            ):
-                with cd(os.path.dirname(fname) or ".", create=True):
-                    pass
-                if is_text_file(os.path.join(mmd, fname)):
-                    with open(fname, "w") as fp:
-                        fp.write(env.get_template(fname).render(**defaults))
-                else:
-                    shutil.copy2(os.path.join(mmd, fname), fname)
-    else:
+    if args.old_style_templates:
         OldFileSystemLoader(mmd).stage_all(args.dest, **defaults)
+    else:
+        FileSystemLoader(mmd).stage_all(args.dest, **defaults)
 
     config_file = meta.run["config_file"]["path"]
     if config_file:

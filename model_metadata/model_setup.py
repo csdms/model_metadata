@@ -77,7 +77,7 @@ def mkdir_p(path):
             raise
 
 
-class FileSystemLoader(object):
+class OldFileSystemLoader(object):
     def __init__(self, searchpath):
         self._base = os.path.abspath(searchpath)
         self._files = find_model_data_files(self._base)
@@ -112,3 +112,27 @@ class FileSystemLoader(object):
             shutil.copy2(src, relpath)
         else:
             FileTemplate(src).to_file(relpath, **kwds)
+
+
+class FileSystemLoader(object):
+    def __init__(self, searchpath):
+        self._base = os.path.abspath(searchpath)
+
+    def stage_all(self, destdir, **defaults):
+        from jinja2 import Environment, FileSystemLoader
+        from .metadata.find import is_metadata_file
+        from binaryornot.check import is_binary
+
+        env = Environment(loader=FileSystemLoader(self._base))
+        with cd(destdir):
+            for fname in env.list_templates(
+                filter_func=lambda f: not is_metadata_file(f)
+            ):
+                with cd(os.path.dirname(fname) or ".", create=True):
+                    pass
+                # if is_text_file(os.path.join(self._base, fname)):
+                if not is_binary(os.path.join(self._base, fname)):
+                    with open(fname, "w") as fp:
+                        fp.write(env.get_template(fname).render(**defaults))
+                else:
+                    shutil.copy2(os.path.join(self._base, fname), fname)
