@@ -37,7 +37,20 @@ def configure_parser_mmd_stage(sub_parsers=None):
         p = sub_parsers.add_parser("stage", help=help, description=help, epilog=example)
     p.add_argument("model", help="model to stage")
     p.add_argument("dest", help="where to stage files")
-    p.add_argument("--old-style-templates", action="store_true", help="use old-style templates")
+    p.add_argument(
+        "-q",
+        "--quiet",
+        action="store_true",
+        help="supress printing the manifest to the screen",
+    )
+    p.add_argument(
+        "--manifest-file",
+        type=str,
+        help="write manifest of staged files to a file instead of the screen",
+    )
+    p.add_argument(
+        "--old-style-templates", action="store_true", help="use old-style templates"
+    )
 
     p.set_defaults(func=execute)
 
@@ -59,13 +72,16 @@ def execute(args):
         defaults[param] = item["value"]["default"]
 
     if args.old_style_templates:
-        OldFileSystemLoader(mmd).stage_all(args.dest, **defaults)
+        manifest = OldFileSystemLoader(mmd).stage_all(args.dest, **defaults)
     else:
-        FileSystemLoader(mmd).stage_all(args.dest, **defaults)
+        manifest = FileSystemLoader(mmd).stage_all(args.dest, **defaults)
+    manifest = os.linesep.join(manifest)
 
-    config_file = meta.run["config_file"]["path"]
-    if config_file:
-        print(config_file, file=sys.stdout)
+    if args.manifest_file is not None:
+        with open(args.manifest_file, "w") as fp:
+            print(manifest, file=fp)
+    elif not args.quiet:
+        print(manifest, file=sys.stdout)
 
 
 def main():
