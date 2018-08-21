@@ -35,6 +35,7 @@ setup(
             "mmd-stage=model_metadata.cli.main_stage:main",
             "mmd-dump=model_metadata.cli.main_dump:main",
             "mmd-install=model_metadata.cli.main_install:main",
+            "mmd-query=model_metadata.cli.main_query:main",
         ],
         "bmi.plugins": ["bmi_mmd=model_metadata.cli.main:configure_parser_mmd"],
     },
