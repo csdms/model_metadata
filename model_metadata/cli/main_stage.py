@@ -44,11 +44,6 @@ def configure_parser_mmd_stage(sub_parsers=None):
         help="supress printing the manifest to the screen",
     )
     p.add_argument(
-        "--manifest-file",
-        type=str,
-        help="write manifest of staged files to a file instead of the screen",
-    )
-    p.add_argument(
         "--old-style-templates", action="store_true", help="use old-style templates"
     )
 
@@ -77,10 +72,7 @@ def execute(args):
         manifest = FileSystemLoader(mmd).stage_all(args.dest, **defaults)
     manifest = os.linesep.join(manifest)
 
-    if args.manifest_file is not None:
-        with open(args.manifest_file, "w") as fp:
-            print(manifest, file=fp)
-    elif not args.quiet:
+    if not args.quiet:
         print(manifest, file=sys.stdout)
 
 
