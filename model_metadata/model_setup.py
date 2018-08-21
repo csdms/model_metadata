@@ -92,26 +92,35 @@ class OldFileSystemLoader(object):
 
     def stage_all(self, destdir, **kwds):
         sources = (os.path.relpath(fn, self.base) for fn in self.sources)
+        manifest = []
         with cd(destdir, create=True):
             for relpath in sources:
-                self.stage(relpath, **kwds)
+                relpath = self.stage(relpath, **kwds)
+                if relpath:
+                    manifest.append(relpath)
+        return manifest
 
     def stage(self, relpath, **kwds):
         src = os.path.join(self.base, relpath)
         if os.path.isdir(src):
             mkdir_p(relpath)
+            staged_file = None
         else:
-            self.render_source(relpath, **kwds)
+            staged_file = self.render_source(relpath, **kwds)
+        return staged_file
 
     def render_source(self, relpath, **kwds):
         src = os.path.join(self.base, relpath)
 
         if os.path.isdir(src):
             mkdir_p(relpath)
+            staged_file = None
         elif is_binary(src):
             shutil.copy2(src, relpath)
+            staged_file = relpath
         else:
-            FileTemplate(src).to_file(relpath, **kwds)
+            staged_file = FileTemplate(src).to_file(relpath, **kwds)
+        return staged_file
 
 
 class FileSystemLoader(object):
@@ -124,10 +133,11 @@ class FileSystemLoader(object):
         from binaryornot.check import is_binary
 
         env = Environment(loader=FileSystemLoader(self._base))
+        manifest = env.list_templates(
+            filter_func=lambda f: not is_metadata_file(f)
+        )
         with cd(destdir):
-            for fname in env.list_templates(
-                filter_func=lambda f: not is_metadata_file(f)
-            ):
+            for fname in manifest:
                 with cd(os.path.dirname(fname) or ".", create=True):
                     pass
                 # if is_text_file(os.path.join(self._base, fname)):
@@ -136,3 +146,4 @@ class FileSystemLoader(object):
                         fp.write(env.get_template(fname).render(**defaults))
                 else:
                     shutil.copy2(os.path.join(self._base, fname), fname)
+        return manifest

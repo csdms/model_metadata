@@ -13,6 +13,7 @@ from .model_parameter import (
     parameter_from_dict,
 )
 from .model_info import ModelInfo
+from .errors import MissingSectionError, MissingValueError
 
 
 setup_yaml_with_canonical_dict()
@@ -66,6 +67,27 @@ class ModelMetadata(object):
                     name=name
                 )
             )
+
+    def get(self, key):
+        """Get a metadata value with dotted notation.
+
+        Parameters
+        ----------
+        key : str
+            Name of a value or section in dotted notation. For example,
+            `run.config_file.path`.
+        """
+        val, section = self._meta, ""
+        for name in key.split("."):
+            section = ".".join([section, name])
+            try:
+                val = val[name]
+            except KeyError:
+                raise MissingSectionError(section)
+            except TypeError:
+                raise MissingValueError(section)
+
+        return val
 
     @property
     def base(self):

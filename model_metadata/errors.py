@@ -17,3 +17,33 @@ class MetadataNotFoundError(ModelMetadataError):
 
     def __str__(self):
         return self._path
+
+
+class MissingSectionError(ModelMetadataError):
+
+    """Raise if a section in not found in the metadata."""
+
+    def __init__(self, name):
+        self._name = name
+
+    @property
+    def name(self):
+        return self._name
+
+    def __str__(self):
+        return self._name
+
+
+class MissingValueError(ModelMetadataError):
+
+    """Raise if a value is not found in a metadata section."""
+
+    def __init__(self, name):
+        self._name = name
+
+    @property
+    def name(self):
+        return self._name
+
+    def __str__(self):
+        return self._name
