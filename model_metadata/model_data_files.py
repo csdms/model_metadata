@@ -55,6 +55,8 @@ class FileTemplate(object):
         with open(dest, "w") as fp:
             fp.write(self.render(**kwds))
 
+        return dest
+
     @staticmethod
     def format(file_like, **kwds):
         try:
