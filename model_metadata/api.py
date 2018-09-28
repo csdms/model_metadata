@@ -12,7 +12,7 @@ def query(model, var):
     else:
         path_to_mmd = os.path.join(sys.prefix, "share", "csdms", model)
     if not os.path.isdir(path_to_mmd):
-        raise MetadataNotFoundError(model)
+        raise MetadataNotFoundError(path_to_mmd)
 
     return ModelMetadata(path_to_mmd).get(var)
 
@@ -24,7 +24,7 @@ def stage(model, dest=".", old_style_templates=False):
         mmd = os.path.join(sys.prefix, "share", "csdms", model)
 
     if not os.path.isdir(mmd):
-        raise MetadataNotFoundError(model)
+        raise MetadataNotFoundError(mmd)
 
     defaults = dict()
     meta = ModelMetadata(mmd)
@@ -35,6 +35,5 @@ def stage(model, dest=".", old_style_templates=False):
         manifest = OldFileSystemLoader(mmd).stage_all(dest, **defaults)
     else:
         manifest = FileSystemLoader(mmd).stage_all(dest, **defaults)
-    manifest = os.linesep.join(manifest)
 
     return manifest

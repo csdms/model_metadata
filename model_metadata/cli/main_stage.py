@@ -48,7 +48,7 @@ def execute(args):
         args.model, dest=args.dest, old_style_templates=args.old_style_templates
     )
     if not args.quiet:
-        print(manifest, file=sys.stdout)
+        print(os.linsep.join(manifest), file=sys.stdout)
 
 
 def main():
