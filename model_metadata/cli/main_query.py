@@ -1,13 +1,11 @@
 #! /usr/bin/env python
 from __future__ import print_function
 
-import os
 import sys
-import argparse
 import textwrap
 
-from ..modelmetadata import ModelMetadata
 from ..errors import MissingSectionError, MissingValueError
+from ..api import query
 
 
 def configure_parser_mmd_query(sub_parsers=None):
@@ -39,22 +37,15 @@ def configure_parser_mmd_query(sub_parsers=None):
 
 
 def execute(args):
-    if os.path.isdir(args.model):
-        path_to_mmd = args.model
-    else:
-        path_to_mmd = os.path.join(sys.prefix, "share", "csdms", args.model)
-    if not os.path.isdir(path_to_mmd):
-        raise MetadataNotFoundError(args.model)
-
-    if args.var:
-        meta = ModelMetadata(path_to_mmd)
-        for var in args.var:
-            try:
-                print(meta.get(var), file=sys.stdout)
-            except MissingSectionError as err:
-                print("{0}: Missing section".format(err.name), file=sys.stderr)
-            except MissingValueError as err:
-                print("{0}: Missing value".format(err.name), file=sys.stderr)
+    for var in args.var:
+        try:
+            value = query(args.model, var)
+        except MissingSectionError as err:
+            print("{0}: Missing section".format(err.name), file=sys.stderr)
+        except MissingValueError as err:
+            print("{0}: Missing value".format(err.name), file=sys.stderr)
+        else:
+            print(value, file=sys.stdout)
 
 
 def main():
