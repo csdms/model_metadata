@@ -1,4 +1,5 @@
 import os
+import sys
 
 from .errors import MetadataNotFoundError
 from .model_setup import FileSystemLoader, OldFileSystemLoader
