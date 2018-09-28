@@ -83,7 +83,10 @@ class ModelMetadata(object):
             try:
                 val = val[name]
             except KeyError:
-                raise MissingSectionError(section)
+                if key.endswith(name):
+                    raise MissingValueError(section)
+                else:
+                    raise MissingSectionError(section)
             except TypeError:
                 raise MissingValueError(section)
 
