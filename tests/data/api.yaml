@@ -1,0 +1,4 @@
+name: child
+language: c++
+package: child
+class: Child
