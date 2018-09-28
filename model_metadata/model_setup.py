@@ -1,15 +1,15 @@
 #! /usr/bin/env python
-import os
-import string
 import errno
+import os
 import shutil
+import string
 
-from scripting.contexts import cd
 from binaryornot.check import is_binary
 
-from .metadata import find_model_data_files
-from .model_data_files import format_template_file, FileTemplate
+from scripting.contexts import cd
 
+from .metadata import find_model_data_files
+from .model_data_files import FileTemplate, format_template_file
 
 TEXT_CHARACTERS = "".join(list(map(chr, range(32, 127))) + list("\n\r\t\b"))
 # NULL_TRANS = string.maketrans("", "")
@@ -133,9 +133,7 @@ class FileSystemLoader(object):
         from binaryornot.check import is_binary
 
         env = Environment(loader=FileSystemLoader(self._base))
-        manifest = env.list_templates(
-            filter_func=lambda f: not is_metadata_file(f)
-        )
+        manifest = env.list_templates(filter_func=lambda f: not is_metadata_file(f))
         with cd(destdir):
             for fname in manifest:
                 with cd(os.path.dirname(fname) or ".", create=True):

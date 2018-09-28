@@ -2,9 +2,10 @@
 import os
 import sys
 
-from jinja2 import FileSystemLoader, Environment
-from scripting.contexts import cd
+from jinja2 import Environment, FileSystemLoader
+
 from scripting import cp, ln_s
+from scripting.contexts import cd
 
 
 def install_mmd(path, dest, develop=False, silent=True, dry_run=False, clobber=False):

@@ -2,7 +2,11 @@ import pytest
 import os
 
 from model_metadata.api import query, stage
-from model_metadata.errors import MissingValueError, MissingSectionError, MetadataNotFoundError
+from model_metadata.errors import (
+    MissingValueError,
+    MissingSectionError,
+    MetadataNotFoundError,
+)
 
 
 def test_query(shared_datadir):

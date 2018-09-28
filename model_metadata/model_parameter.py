@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 import os
-import sys
 import re
+import sys
 from collections import OrderedDict
 
 import yaml

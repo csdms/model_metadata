@@ -5,7 +5,6 @@ from scripting.contexts import cd
 
 from ..errors import MetadataNotFoundError
 
-
 _METADATA_FILES = {
     "api.yaml",
     "api.yml",

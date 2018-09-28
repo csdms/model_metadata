@@ -3,11 +3,11 @@ import textwrap
 
 import yaml
 
-from .main_find import configure_parser_mmd_find
-from .main_stage import configure_parser_mmd_stage
-from .main_dump import configure_parser_mmd_dump
-from .main_install import configure_parser_mmd_install
 from .. import __version__
+from .main_dump import configure_parser_mmd_dump
+from .main_find import configure_parser_mmd_find
+from .main_install import configure_parser_mmd_install
+from .main_stage import configure_parser_mmd_stage
 
 
 def configure_parser_mmd(sub_parsers=None):

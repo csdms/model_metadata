@@ -1,11 +1,11 @@
 #! /usr/bin/env python
 from __future__ import print_function
 
-import os
-import sys
 import argparse
-import textwrap
+import os
 import shutil
+import sys
+import textwrap
 
 from ..modelmetadata import ModelMetadata
 from ..utils import install_mmd

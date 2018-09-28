@@ -4,12 +4,11 @@ import warnings
 from pprint import pformat
 
 import six
-from packaging.version import Version, InvalidVersion
 import yaml
+from packaging.version import InvalidVersion, Version
 
 from .metadata.load import load_meta_section
 from .model_parameter import setup_yaml_with_canonical_dict
-
 
 setup_yaml_with_canonical_dict()
 

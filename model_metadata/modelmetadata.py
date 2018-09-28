@@ -5,16 +5,15 @@ import warnings
 import six
 import yaml
 
+from .errors import MissingSectionError, MissingValueError
 from .metadata.find import find_metadata_files
 from .metadata.load import load_yaml_file
+from .model_info import ModelInfo
 from .model_parameter import (
     ModelParameter,
-    setup_yaml_with_canonical_dict,
     parameter_from_dict,
+    setup_yaml_with_canonical_dict,
 )
-from .model_info import ModelInfo
-from .errors import MissingSectionError, MissingValueError
-
 
 setup_yaml_with_canonical_dict()
 
