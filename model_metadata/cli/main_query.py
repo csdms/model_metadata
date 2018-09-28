@@ -1,11 +1,12 @@
 #! /usr/bin/env python
 from __future__ import print_function
 
+import argparse
 import sys
 import textwrap
 
-from ..errors import MissingSectionError, MissingValueError
 from ..api import query
+from ..errors import MissingSectionError, MissingValueError
 
 
 def configure_parser_mmd_query(sub_parsers=None):
