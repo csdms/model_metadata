@@ -16,7 +16,7 @@ def test_query(shared_datadir):
 
 def test_stage(tmpdir, shared_datadir):
     with tmpdir.as_cwd():
-        manifest = stage(shared_datadir, "./the_stage")
+        manifest = stage(str(shared_datadir), "./the_stage")
         assert manifest == ["child.in"]
 
         assert os.listdir("the_stage") == ["child.in"]
@@ -67,13 +67,13 @@ def test_install_clobber(tmpdir, shared_datadir):
 
 def test_stage_with_default_dest(tmpdir, shared_datadir):
     with tmpdir.as_cwd():
-        stage(shared_datadir)
+        stage(str(shared_datadir))
         assert "child.in" in os.listdir(".")
 
 
 def test_stage_is_filled_out(tmpdir, shared_datadir):
     with tmpdir.as_cwd():
-        stage(shared_datadir, "./the_stage")
+        stage(str(shared_datadir), "./the_stage")
 
         with open("the_stage/child.in", "r") as fp:
             contents = fp.read()
@@ -83,12 +83,12 @@ def test_stage_is_filled_out(tmpdir, shared_datadir):
 
 def test_query_with_bad_section(shared_datadir):
     with pytest.raises(MissingSectionError):
-        query(shared_datadir, "not-a-section.version")
+        query(str(shared_datadir), "not-a-section.version")
 
 
 def test_query_with_bad_value(shared_datadir):
     with pytest.raises(MissingValueError):
-        query(shared_datadir, "info.not_a_value")
+        query(str(shared_datadir), "info.not_a_value")
 
 
 def test_query_with_bad_path(tmpdir):
