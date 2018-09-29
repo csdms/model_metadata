@@ -1,8 +1,22 @@
-#! /usr/bin/env python
 import os
-import sys
 
 import yaml
+
+
+def load_yaml_file(file_like):
+    try:
+        contents = file_like.read()
+    except AttributeError:
+        if os.path.isfile(file_like):
+            with open(file_like, "r") as fp:
+                contents = fp.read()
+        else:
+            contents = None
+
+    if contents:
+        return _merge_documents(yaml.load_all(contents))
+    else:
+        return None
 
 
 def load_meta_section(path, section):
@@ -32,25 +46,8 @@ def load_meta_section(path, section):
     return meta_section
 
 
-def merge_documents(documents):
+def _merge_documents(documents):
     merged = {}
     for document in documents:
         merged.update(document)
     return merged
-
-
-def load_yaml_file(file_like):
-    try:
-        contents = file_like.read()
-    except AttributeError:
-        if os.path.isfile(file_like):
-            with open(file_like, "r") as fp:
-                contents = fp.read()
-        else:
-            contents = None
-
-    if contents:
-        return merge_documents(yaml.load_all(contents))
-        # return yaml.load(contents)
-    else:
-        return None

@@ -7,7 +7,7 @@ import six
 import yaml
 from packaging.version import InvalidVersion, Version
 
-from .metadata.load import load_meta_section
+from .load import load_meta_section
 from .model_parameter import setup_yaml_with_canonical_dict
 
 setup_yaml_with_canonical_dict()
