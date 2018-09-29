@@ -6,8 +6,7 @@ import os
 import sys
 import textwrap
 
-# from ..metadata import find_model_data_files
-from ..metadata.find import find_metadata_files
+from ..find import find_metadata_files
 from ..model_setup import FileSystemLoader
 
 

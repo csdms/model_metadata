@@ -6,7 +6,7 @@ import shutil
 from binaryornot.check import is_binary
 from scripting.contexts import cd
 
-from .metadata import find_model_data_files
+from .find import find_model_data_files
 from .model_data_files import FileTemplate
 
 TEXT_CHARACTERS = "".join(list(map(chr, range(32, 127))) + list("\n\r\t\b"))
@@ -126,7 +126,7 @@ class FileSystemLoader(object):
 
     def stage_all(self, destdir, **defaults):
         from jinja2 import Environment, FileSystemLoader
-        from .metadata.find import is_metadata_file
+        from .find import is_metadata_file
         from binaryornot.check import is_binary
 
         env = Environment(loader=FileSystemLoader(self._base))
