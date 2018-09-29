@@ -116,7 +116,7 @@ def validate_version(version):
     try:
         Version(version)
     except InvalidVersion:
-        warnings.warn("{v}: version string does not follow PEP440".format(v=v))
+        warnings.warn("{v}: version string does not follow PEP440".format(v=version))
     return version
 
 

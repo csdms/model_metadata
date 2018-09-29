@@ -3,7 +3,7 @@ import os
 import string
 import tempfile
 
-from scripting.contexts import cd
+from scripting.contexts import cd, mkdir_p
 
 
 class SafeFormatter(string.Formatter):

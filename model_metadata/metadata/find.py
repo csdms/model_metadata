@@ -62,7 +62,7 @@ def find_metadata_files(datadir):
 
 def find_model_data_files(datadir):
     """Look for model data files.
-    
+
     Parameters
     ----------
     datadir : str
