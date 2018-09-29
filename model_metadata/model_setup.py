@@ -4,7 +4,6 @@ import os
 import shutil
 
 from binaryornot.check import is_binary
-
 from scripting.contexts import cd
 
 from .metadata import find_model_data_files
