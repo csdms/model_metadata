@@ -5,24 +5,6 @@ import sys
 import yaml
 
 
-def model_data_dir(name, datarootdir=None):
-    """Get a model's data dir.
-
-    Parameters
-    ----------
-    name : str
-        The name of the model.
-
-    Returns
-    -------
-    str
-        The absolute path to the data directory for the model.
-    """
-    datarootdir = datarootdir or os.path.join(sys.prefix, "share")
-    # datarootdir = query_config_var('datarootdir')
-    return os.path.join(datarootdir, "csdms", name)
-
-
 def load_meta_section(path, section):
     """Load a section from a model metadata file.
 
@@ -72,33 +54,3 @@ def load_yaml_file(file_like):
         # return yaml.load(contents)
     else:
         return None
-
-
-def load_metadata(name):
-    """Load all metadata for a model.
-
-    Parameters
-    ----------
-    name : str
-        Name of model.
-
-    Returns
-    -------
-    dict
-        A dictionary of the model metadata. There are two keys, 'defaults'
-        for the default parameters and 'info' for model metadata.
-    """
-    meta = dict()
-
-    datadir = model_data_dir(name)
-    meta["defaults"] = load_default_parameters(datadir)
-    meta["info"] = load_info_section(datadir)
-    meta["run"] = load_run_section(datadir)
-    meta["names"] = load_names_section(datadir)
-
-    parameters = dict()
-    for name, param in meta["defaults"].items():
-        parameters[name] = param.value, param.units
-    meta["parameters"] = parameters
-
-    return meta
