@@ -4,12 +4,11 @@ import warnings
 from pprint import pformat
 
 import six
-from packaging.version import Version, InvalidVersion
 import yaml
+from packaging.version import InvalidVersion, Version
 
-from .metadata.load import load_meta_section
+from .load import load_meta_section
 from .model_parameter import setup_yaml_with_canonical_dict
-
 
 setup_yaml_with_canonical_dict()
 
@@ -117,7 +116,7 @@ def validate_version(version):
     try:
         Version(version)
     except InvalidVersion:
-        warnings.warn("{v}: version string does not follow PEP440".format(v=v))
+        warnings.warn("{v}: version string does not follow PEP440".format(v=version))
     return version
 
 

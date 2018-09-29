@@ -1,7 +1,6 @@
 #! /usr/bin/env python
-import os
-import sys
 import re
+import sys
 from collections import OrderedDict
 
 import yaml
@@ -230,34 +229,6 @@ class ModelParameterMixIn(object):
     def as_yaml(self):
         return yaml.safe_dump(self.as_dict(), default_flow_style=False)
 
-    @classmethod
-    def from_yaml(cls, buffer):
-        """Load a parameter from a yaml-formatted string.
-
-        Parameters
-        ----------
-        stream : str or file_like
-            YAML-formatted text.
-
-        Returns
-        -------
-        ModelInputParameter
-            A new instance of a model parameter.
-
-        Examples
-        --------
-        >>> from model_metadata import ModelParameter
-        >>> buffer = '''
-        ... dt:
-        ...   desc: Time step.
-        ...   value: 1.
-        ... '''
-        """
-        kwds = yaml.load(buffer)
-        value = kwds.pop("value")
-
-        return cls(value, **kwds)
-
     @property
     def type(self):
         return self._dtype
@@ -468,36 +439,6 @@ class ModelParameter(object):
     @property
     def choices(self):
         return self._choices
-
-    @classmethod
-    def from_yaml(cls, stream):
-        """Load a parameter from a yaml-formatted string.
-
-        Parameters
-        ----------
-        stream : str or file_like
-            YAML-formatted text.
-
-        Returns
-        -------
-        ModelInputParameter
-            A new instance of a model parameter.
-
-        Examples
-        --------
-        >>> from model_metadata import ModelParameter
-        >>> buffer = '''
-        ... dt:
-        ...   desc: Time step.
-        ...   value: 1.
-        ... '''
-        """
-        import yaml
-
-        kwds = yaml.load(buffer)
-        name = kwds.keys[0]
-
-        return cls(name, **kwds[name])
 
     @staticmethod
     def norm(param):

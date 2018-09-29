@@ -3,8 +3,7 @@ import os
 
 from scripting.contexts import cd
 
-from ..errors import MetadataNotFoundError
-
+from .errors import MetadataNotFoundError
 
 _METADATA_FILES = {
     "api.yaml",
@@ -63,7 +62,7 @@ def find_metadata_files(datadir):
 
 def find_model_data_files(datadir):
     """Look for model data files.
-    
+
     Parameters
     ----------
     datadir : str

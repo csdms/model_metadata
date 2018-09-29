@@ -1,14 +1,13 @@
 #! /usr/bin/env python
 from __future__ import print_function
 
+import argparse
 import os
 import sys
-import argparse
 import textwrap
-import shutil
 
+from ..api import install
 from ..modelmetadata import ModelMetadata
-from ..utils import install_mmd
 
 
 def configure_parser_mmd_install(sub_parsers=None):
@@ -58,7 +57,7 @@ def execute(args):
     else:
         dest = args.destination
 
-    install_mmd(
+    install(
         os.path.abspath(args.source),
         os.path.abspath(dest),
         develop=args.develop,
@@ -69,8 +68,6 @@ def execute(args):
 
 
 def main():
-    import argparse
-
     p = configure_parser_mmd_install()
 
     args = p.parse_args()

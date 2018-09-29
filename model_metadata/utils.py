@@ -2,26 +2,25 @@
 import os
 import sys
 
-from jinja2 import FileSystemLoader, Environment
-from scripting.contexts import cd
-from scripting import cp, ln_s
+from .api import install as install_mmd
 
 
-def install_mmd(path, dest, develop=False, silent=True, dry_run=False, clobber=False):
-    templates = Environment(loader=FileSystemLoader(path)).list_templates()
-    for fname in templates:
-        if develop:
-            install = ln_s
-        else:
-            install = cp
-        install(
-            os.path.join(path, fname),
-            os.path.join(dest, fname),
-            silent=silent,
-            dry_run=dry_run,
-            create_dirs=True,
-            clobber=clobber,
-        )
+def model_data_dir(name, datarootdir=None):
+    """Get a model's data dir.
+
+    Parameters
+    ----------
+    name : str
+        The name of the model.
+
+    Returns
+    -------
+    str
+        The absolute path to the data directory for the model.
+    """
+    datarootdir = datarootdir or os.path.join(sys.prefix, "share")
+    # datarootdir = query_config_var('datarootdir')
+    return os.path.join(datarootdir, "csdms", name)
 
 
 def get_cmdclass(paths, cmdclass=None):

@@ -1,18 +1,15 @@
 #! /usr/bin/env python
-import os
-import string
 import errno
+import os
 import shutil
 
-from scripting.contexts import cd
 from binaryornot.check import is_binary
+from scripting.contexts import cd
 
-from .metadata import find_model_data_files
-from .model_data_files import format_template_file, FileTemplate
-
+from .find import find_model_data_files
+from .model_data_files import FileTemplate
 
 TEXT_CHARACTERS = "".join(list(map(chr, range(32, 127))) + list("\n\r\t\b"))
-# NULL_TRANS = string.maketrans("", "")
 
 
 def is_text_file(fname, block=1024):
@@ -129,13 +126,11 @@ class FileSystemLoader(object):
 
     def stage_all(self, destdir, **defaults):
         from jinja2 import Environment, FileSystemLoader
-        from .metadata.find import is_metadata_file
+        from .find import is_metadata_file
         from binaryornot.check import is_binary
 
         env = Environment(loader=FileSystemLoader(self._base))
-        manifest = env.list_templates(
-            filter_func=lambda f: not is_metadata_file(f)
-        )
+        manifest = env.list_templates(filter_func=lambda f: not is_metadata_file(f))
         with cd(destdir):
             for fname in manifest:
                 with cd(os.path.dirname(fname) or ".", create=True):

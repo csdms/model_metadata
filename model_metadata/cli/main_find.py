@@ -1,13 +1,12 @@
 #! /usr/bin/env python
 from __future__ import print_function
 
+import argparse
 import os
 import sys
-import argparse
 import textwrap
 
-# from ..metadata import find_model_data_files
-from ..metadata.find import find_metadata_files
+from ..find import find_metadata_files
 from ..model_setup import FileSystemLoader
 
 
@@ -49,8 +48,6 @@ def execute(args):
 
 
 def main():
-    import argparse
-
     p = configure_parser_mmd_find()
 
     args = p.parse_args()
