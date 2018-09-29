@@ -35,6 +35,7 @@ install:
 - conda create -n _testing python=$TRAVIS_PYTHON_VERSION
 - source activate _testing
 - conda install -q conda-build anaconda-client sphinx pytest pytest-datadir
+- conda install -q --file=requirements.txt
 script:
 - make test
 - conda build ./conda-recipe --old-build-string
