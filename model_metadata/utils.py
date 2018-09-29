@@ -5,6 +5,24 @@ import sys
 from .api import install as install_mmd
 
 
+def model_data_dir(name, datarootdir=None):
+    """Get a model's data dir.
+
+    Parameters
+    ----------
+    name : str
+        The name of the model.
+
+    Returns
+    -------
+    str
+        The absolute path to the data directory for the model.
+    """
+    datarootdir = datarootdir or os.path.join(sys.prefix, "share")
+    # datarootdir = query_config_var('datarootdir')
+    return os.path.join(datarootdir, "csdms", name)
+
+
 def get_cmdclass(paths, cmdclass=None):
 
     cmdclass = {} if cmdclass is None else cmdclass.copy()
