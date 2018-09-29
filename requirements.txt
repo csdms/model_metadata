@@ -1,0 +1,6 @@
+packaging
+pyyaml
+six
+jinja2
+scripting
+binaryornot
