@@ -2,8 +2,6 @@
 import os
 import sys
 
-from jinja2 import Environment, FileSystemLoader
-
 from .api import install as install_mmd
 
 
