@@ -50,8 +50,6 @@ def execute(args):
 
 
 def main():
-    import argparse
-
     p = configure_parser_mmd_query()
 
     args = p.parse_args()

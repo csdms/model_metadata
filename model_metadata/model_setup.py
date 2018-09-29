@@ -2,17 +2,15 @@
 import errno
 import os
 import shutil
-import string
 
 from binaryornot.check import is_binary
 
 from scripting.contexts import cd
 
 from .metadata import find_model_data_files
-from .model_data_files import FileTemplate, format_template_file
+from .model_data_files import FileTemplate
 
 TEXT_CHARACTERS = "".join(list(map(chr, range(32, 127))) + list("\n\r\t\b"))
-# NULL_TRANS = string.maketrans("", "")
 
 
 def is_text_file(fname, block=1024):

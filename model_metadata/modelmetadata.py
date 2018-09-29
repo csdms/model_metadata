@@ -9,11 +9,7 @@ from .errors import MissingSectionError, MissingValueError
 from .metadata.find import find_metadata_files
 from .metadata.load import load_yaml_file
 from .model_info import ModelInfo
-from .model_parameter import (
-    ModelParameter,
-    parameter_from_dict,
-    setup_yaml_with_canonical_dict,
-)
+from .model_parameter import parameter_from_dict, setup_yaml_with_canonical_dict
 
 setup_yaml_with_canonical_dict()
 

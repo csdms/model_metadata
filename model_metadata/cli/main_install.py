@@ -3,7 +3,6 @@ from __future__ import print_function
 
 import argparse
 import os
-import shutil
 import sys
 import textwrap
 
@@ -69,8 +68,6 @@ def execute(args):
 
 
 def main():
-    import argparse
-
     p = configure_parser_mmd_install()
 
     args = p.parse_args()

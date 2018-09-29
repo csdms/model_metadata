@@ -49,8 +49,6 @@ def execute(args):
 
 
 def main():
-    import argparse
-
     p = configure_parser_mmd_find()
 
     args = p.parse_args()

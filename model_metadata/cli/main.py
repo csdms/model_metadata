@@ -1,8 +1,6 @@
 import argparse
 import textwrap
 
-import yaml
-
 from .. import __version__
 from .main_dump import configure_parser_mmd_dump
 from .main_find import configure_parser_mmd_find

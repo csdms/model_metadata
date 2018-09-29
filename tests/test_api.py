@@ -15,7 +15,7 @@ def test_query(shared_datadir):
 
 
 def test_stage(tmpdir, shared_datadir):
-    with tmpdir.as_cwd() as prev:
+    with tmpdir.as_cwd():
         manifest = stage(shared_datadir, "./the_stage")
         assert manifest == ["child.in"]
 
@@ -23,13 +23,13 @@ def test_stage(tmpdir, shared_datadir):
 
 
 def test_stage_with_default_dest(tmpdir, shared_datadir):
-    with tmpdir.as_cwd() as prev:
+    with tmpdir.as_cwd():
         stage(shared_datadir)
         assert "child.in" in os.listdir(".")
 
 
 def test_stage_is_filled_out(tmpdir, shared_datadir):
-    with tmpdir.as_cwd() as prev:
+    with tmpdir.as_cwd():
         stage(shared_datadir, "./the_stage")
 
         with open("the_stage/child.in", "r") as fp:
