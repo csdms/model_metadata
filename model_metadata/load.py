@@ -14,7 +14,7 @@ def load_yaml_file(file_like):
             contents = None
 
     if contents:
-        return _merge_documents(yaml.load_all(contents))
+        return _merge_documents(yaml.safe_load_all(contents))
     else:
         return None
 
