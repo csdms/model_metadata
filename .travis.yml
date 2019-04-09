@@ -4,14 +4,27 @@ os:
 - osx
 env:
   matrix:
-  - TRAVIS_PYTHON_VERSION="2.7"
-  - TRAVIS_PYTHON_VERSION="3.5"
-  - TRAVIS_PYTHON_VERSION="3.6"
-  global:
-  - CONDA_PREFIX=$HOME/miniconda
-  - MINICONDA_URL_BASE="https://repo.continuum.io/miniconda/Miniconda3-latest"
-  - secure: loIxrGwXGcMBQK708SoToTQOsk02E8hAGuUfRxXYnUmTVzRaLlSVgK74WMPgHhg+WqK28wh62OAbqXajzq9EmToh3za/Rt47wPe5bz6stlEIsWyvULHKhIkjAt8Zh5PireCO1tCmCS2wlqwOkACJXDv4d1lkRxhsdvfOMv1alkMoMBxKxfj8OEnUS4UxayQVAmE8akO9E2DYTjQfYdxf0SZvz0MM7zV8h9Twq2R6tcEikbfSEkB6w2aGYS2ptObzVpYVdY9rZyYC+Z9eIOWHhPpysxcZdDByOIVK5iAf2P8Qh/XRT5gZol20lf5dnklx8f0iSamzqoppTqbavoHpG4GIrWGb8R0TLBkJU1eQ/TK0Pqks0CcaoP3JY7vhVp4GvqKwoF7Cl18YcGE9WDivnjrzEKN9YlkZQJrup7aQnktGqs6+fh36hsVOrZoWRSHZSIuX2dl8tcQmJgYagNwxfi6FMSfEWjlMa1+rRovUzjUt1I/2aoHah/vPYpdLLe7QxxsZG4x9iagEU+H9qmjdI0XHDtsJDLXJOYJVKPUWG/+CgIp6FksEXJQ1H+mhHpVX/mca5HrmGIcEmqEO3aL3lUmLbEz6LV+SJ6xD/VkiMjt4vSVPqXAy9O8EmdBlPPDepGgW785fvtTFIMABo35A/t3XI4Vg4VMsv/iPFOm1fII=
+  - CONDA_ENV=py36
+  - CONDA_ENV=py37
+  - CONDA_ENV=lint
+matrix:
+  exclude:
+  - os: osx
+    env: CONDA_ENV=lint
 sudo: false
+jobs:
+  include:
+  - stage: deploy
+    if: tag =~ v.*$
+    script: skip
+    os: linux
+    deploy:
+      on:
+        all_branches: true
+      provider: pypi
+      user: mcflugen
+      password:
+        secure: SUvXMtJt/BrlKMBU1WDp9yQSm18yfjvPr7p0A5hjRykoKEtQ4kLbIuUXRLHyb9lnbuBen00oaCyJIjoYWWGbt0mcSLz39CMAgid1NsNMCq780c41IF2+Wm3HnUb9Ifm+38wNP/sqieGb6nm2Pq5sBHfeaB5+iCSup+fysOg6SvrCtxwCReNC0FeGD3dQ09XL6sk7rzmX78a5XXSSip5b/N0SAG9SgCiwkmCky4rZlZNWxBzrI5Gg0cYBNtw9HKCOZ/7xn3KvAdhz6i1t9sSzEIf6AFBSFX9D2/yratk7n60z3Os9sTX0Wve4wsk1+cYOtfe6x27/lN2Z0dgTAtY75DstCP5yIJeoYiFZaMTdg2mpY875xMPK95P2JYplyPdmTZPNaeJhR5qNwfn4LX97uK9sQ7lMm1U4qKxINMGd0ysacqnvvh0ndZs+hGudRVhfKM9Q4y+Gz5Snj6oLhP3XroB0WECJnj9DpOHpnCYbFFC0eOV2jUeqR4MMKbuAnuccdEqbaNdVpgKvL6OgWJrfpcHi1rcgLtZQNF4cBetWcqLet6JU/zrJcls2NXpe3LQKWpdxtXjN+8jqL5HOqEVtMc6Vekj3P0XYWsbfKAutsqKBO8NYIuSPsUaO0+qzVCWVV0URxZg0R/RoMHlolPQyz7OiHRECietiWV6wbYO0NZ8=
 before_install:
 - |
   if [[ $TRAVIS_OS_NAME == "osx" ]]; then
@@ -22,30 +35,30 @@ before_install:
 install:
 - |
   if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-    OS="MacOSX-x86_64"
+    curl https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh > $HOME/miniconda.sh
   else
-    OS="Linux-x86_64"
+    curl https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh > $HOME/miniconda.sh
   fi
-- curl $MINICONDA_URL_BASE-$OS.sh > $HOME/minconda.sh
-- bash $HOME/minconda.sh -b -p $CONDA_PREFIX
-- export PATH="$CONDA_PREFIX/bin:$PATH"
+- bash $HOME/miniconda.sh -b -p $HOME/anaconda
+- export PATH="$HOME/anaconda/bin:$PATH"
 - hash -r
 - conda config --set always_yes yes --set changeps1 no
-- conda config --add channels conda-forge
-- conda create -n _testing python=$TRAVIS_PYTHON_VERSION
-- source activate _testing
-- conda install -q conda-build anaconda-client sphinx pytest pytest-datadir
-- conda install -q --file=requirements.txt
-script:
-- make test
-- conda build ./conda-recipe --old-build-string
-after_success:
 - |
-  if [[ $TRAVIS_OS_NAME == "linux" ]]; then
-    conda install -q coverage coveralls
-    coveralls --verbose
+  if [[ "$CONDA_ENV" == "docs" ]]; then
+    conda env create -n test_env --file docs/environment.yml
+  else
+    conda env create -n test_env --file ci/requirements-$CONDA_ENV-$TRAVIS_OS_NAME.yml
   fi
-- curl https://raw.githubusercontent.com/csdms/ci-tools/master/anaconda_upload.py
-  > $HOME/anaconda_upload.py
-- echo $ANACONDA_TOKEN | python $HOME/anaconda_upload.py ./conda-recipe --old-build-string
-  --channel=main --org=csdms --token=-
+- source activate test_env
+- pip install . -r requirements.txt
+script:
+- |
+  if [[ "$CONDA_ENV" == "lint" ]]; then
+    make lint
+  elif [[ "$CONDA_ENV" == "docs" ]]; then
+    sphinx-apidoc --force -o docs/api model_metadata *tests
+    make -C docs clean html
+  else
+    pytest --cov=model_metadata --cov-report=xml:$(pwd)/coverage.xml -vvv
+  fi
+after_success: coveralls
