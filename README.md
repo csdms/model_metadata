@@ -1,3 +1,10 @@
+[![Build Status](https://travis-ci.org/csdms/model_metadata.svg?branch=master)](https://travis-ci.org/csdms/model_metadata)
+[![Build status](https://ci.appveyor.com/api/projects/status/xb4lalkn0603ac1o/branch/master?svg=true)](https://ci.appveyor.com/project/mcflugen/standard-names/branch/master)
+[![Coverage Status](https://coveralls.io/repos/github/csdms/model_metadata/badge.svg?branch=master)](https://coveralls.io/github/csdms/model_metadata?branch=master)
+[![Anaconda-Server Badge](https://anaconda.org/csdms/model_metadata/badges/version.svg)](https://anaconda.org/csdms/model_metadata)
+[![Anaconda-Server Badge](https://anaconda.org/csdms/model_metadata/badges/installer/conda.svg)](https://conda.anaconda.org/csdms)
+[![Anaconda-Server Badge](https://anaconda.org/csdms/model_metadata/badges/downloads.svg)](https://anaconda.org/csdms/model_metadata)
+
 # model_metadata
 Tools for working with CSDMS Model Metadata
 
