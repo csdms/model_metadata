@@ -9,6 +9,12 @@ from .modelmetadata import ModelMetadata
 
 
 def query(model, var):
+    try:
+        if os.path.isdir(model.METADATA):
+            model = model.METADATA
+    except AttributeError:
+        pass
+
     if os.path.isdir(model):
         path_to_mmd = model
     else:
@@ -20,6 +26,12 @@ def query(model, var):
 
 
 def stage(model, dest=".", old_style_templates=False):
+    try:
+        if os.path.isdir(model.METADATA):
+            model = model.METADATA
+    except AttributeError:
+        pass
+
     if os.path.isdir(model):
         mmd = model
     else:
