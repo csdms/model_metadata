@@ -87,6 +87,10 @@ class ModelMetadata(object):
 
         return val
 
+    @staticmethod
+    def format(value):
+        return yaml.safe_dump(value)
+
     @property
     def base(self):
         return self._path
