@@ -38,6 +38,7 @@ setup(
     setup_requires=["setuptools"],
     install_requires=[
         "binaryornot",
+        "click",
         "jinja2",
         "packaging",
         "pyyaml",
