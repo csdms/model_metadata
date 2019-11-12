@@ -1,4 +1,7 @@
+import importlib
 import os
+import pathlib
+import pkg_resources
 import sys
 
 from scripting import cp, ln_s
@@ -8,39 +11,132 @@ from .model_setup import FileSystemLoader, OldFileSystemLoader
 from .modelmetadata import ModelMetadata
 
 
-def query(model, var):
+def _load_component(entry_point):
+    if "" not in sys.path:
+        sys.path.append("")
+
+    module_name, cls_name = entry_point.split(":")
+
+    component = None
     try:
-        if os.path.isdir(model.METADATA):
-            model = model.METADATA
-    except AttributeError:
+        module = importlib.import_module(module_name)
+    except ImportError:
+        raise
+    else:
+        try:
+            component = module.__dict__[cls_name]
+        except KeyError:
+            raise ImportError(cls_name)
+
+    return component
+
+
+def _search_paths(model):
+    """List of paths to search in looking for a model's metadata.
+
+    Parameters
+    ----------
+    model : path, str or object
+        The model is interpreted either as a path to a folder that
+        contains metadata, the name of a model component, or a
+        model object.
+
+    Returns
+    -------
+    list of Paths
+        Paths to search for metadata.
+    """
+    if isinstance(model, str) and ":" in model:
+        try:
+            model = _load_component(model)
+        except ImportError:
+            pass
+
+    paths = []
+    try:
+        path_to_metadata = pathlib.Path(model.METADATA)
+    except (TypeError, AttributeError):
+        pass
+    else:
+        paths.append(
+            pkg_resources.resource_filename(model.__module__, "") / path_to_metadata
+        )
+
+    try:
+        paths.append(pathlib.Path(model))
+    except TypeError:
+        paths.append(pathlib.Path(model.__name__))
+
+    try:
+        paths.append(pathlib.Path(sys.prefix, "share", "csdms") / model)
+    except TypeError:
         pass
 
-    if os.path.isdir(model):
-        path_to_mmd = model
-    else:
-        path_to_mmd = os.path.join(sys.prefix, "share", "csdms", model)
-    if not os.path.isdir(path_to_mmd):
-        raise MetadataNotFoundError(path_to_mmd)
+    return paths
 
-    return ModelMetadata(path_to_mmd).get(var)
+
+def find(model):
+    """Attempt to find a model's metadata.
+
+    Parameters
+    ----------
+    model : path, str or object
+        The model is interpreted either as a path to a folder that
+        contains metadata, the name of a model component, or a
+        model object.
+
+    Returns
+    -------
+    Path
+        Path to the folder that contains the model's metadata.
+
+    Raises
+    ------
+    MetadataNotFoundError
+        If a metadata folder cannot be found.
+    """
+    for p in _search_paths(model):
+        if p.is_dir():
+            return p
+    raise MetadataNotFoundError(str(model))
+
+
+def query(model, var):
+    """Query metadata for a particular variable (or section).
+
+    Parameters
+    ----------
+    model : path, str or object
+        The model is interpreted either as a path to a folder that
+        contains metadata, the name of a model component, or a
+        model object.
+    var : str
+        Name of a variable to query. The should be given in "dotted notation".
+        That is, to query the variable *url* in the *info* section, use
+        *"info.url"*. To get the entire *info* section just use *"info"*.
+
+    Returns
+    -------
+    object
+        The requested variable.
+    """
+    return ModelMetadata(find(model)).get(var)
 
 
 def stage(model, dest=".", old_style_templates=False):
-    try:
-        if os.path.isdir(model.METADATA):
-            model = model.METADATA
-    except AttributeError:
-        pass
+    """Stage a model by setting up its input files.
 
-    if os.path.isdir(model):
-        mmd = model
-    else:
-        mmd = os.path.join(sys.prefix, "share", "csdms", model)
-
-    if not os.path.isdir(mmd):
-        raise MetadataNotFoundError(mmd)
-
+    Parameters
+    ----------
+    model : path, str or object
+        The model is interpreted either as a path to a folder that
+        contains metadata, the name of a model component, or a
+        model object.
+    dest : str
+        Path to a folder within which to stage the model.
+    """
     defaults = dict()
+    mmd = find(model)
     meta = ModelMetadata(mmd)
     for param, item in meta.parameters.items():
         defaults[param] = item["value"]["default"]
