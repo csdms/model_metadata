@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import os
 import pathlib
+import sys
 
 import pytest
 from click.testing import CliRunner
@@ -88,4 +89,7 @@ def test_find_absolute_path(datadir):
     os.chdir(datadir)
     result = runner.invoke(mmd, ["find", "model:ModelAbsolutePath"])
     assert result.exit_code == 0
-    assert result.stdout.strip() == "/"
+    if sys.platform.startswith("win"):
+        assert result.stdout.strip() == r"C:\\"
+    else:
+        assert result.stdout.strip() == "/"
