@@ -47,14 +47,7 @@ setup(
     packages=find_packages(),
     cmdclass=versioneer.get_cmdclass(),
     entry_points={
-        "console_scripts": [
-            "mmd=model_metadata.cli.main:main",
-            "mmd-find=model_metadata.cli.main_find:main",
-            "mmd-stage=model_metadata.cli.main_stage:main",
-            "mmd-dump=model_metadata.cli.main_dump:main",
-            "mmd-install=model_metadata.cli.main_install:main",
-            "mmd-query=model_metadata.cli.main_query:main",
-        ],
+        "console_scripts": ["mmd=model_metadata.cli.main:mmd"],
         "bmi.plugins": ["bmi_mmd=model_metadata.cli.main:configure_parser_mmd"],
     },
 )

@@ -2,6 +2,7 @@
 from __future__ import print_function
 
 import argparse
+import importlib
 import sys
 import textwrap
 
@@ -37,10 +38,29 @@ def configure_parser_mmd_query(sub_parsers=None):
     return p
 
 
+def load_component(entry_point):
+    module_name, cls_name = entry_point.split(":")
+
+    component = None
+    try:
+        module = importlib.import_module(module_name)
+    except ImportError:
+        raise
+    else:
+        try:
+            component = module.__dict__[cls_name]
+        except KeyError:
+            raise ImportError(cls_name)
+
+    return component
+
+
 def execute(args):
+    model = load_component(args.model)
+
     for var in args.var:
         try:
-            value = query(args.model, var)
+            value = query(model, var)
         except MissingSectionError as err:
             print("{0}: Missing section".format(err.name), file=sys.stderr)
         except MissingValueError as err:
