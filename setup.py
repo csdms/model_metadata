@@ -1,7 +1,5 @@
 from setuptools import setup, find_packages
 
-import versioneer
-
 
 def read_requirements():
     import os
@@ -19,7 +17,7 @@ def read_requirements():
 
 setup(
     name="model_metadata",
-    version=versioneer.get_version(),
+    version="0.7.0.dev0",
     description="Model Metadata",
     author="Eric Hutton",
     author_email="huttone@colorado.edu",
@@ -46,7 +44,6 @@ setup(
         "six",
     ],
     packages=find_packages(),
-    cmdclass=versioneer.get_cmdclass(),
     entry_points={
         "console_scripts": ["mmd=model_metadata.cli.main:mmd"],
         "bmi.plugins": ["bmi_mmd=model_metadata.cli.main:configure_parser_mmd"],
