@@ -4,16 +4,17 @@ os:
 - osx
 env:
   matrix:
-  - CONDA_ENV=py36
-  - CONDA_ENV=py37
-  - CONDA_ENV=lint
-matrix:
-  exclude:
-  - os: osx
-    env: CONDA_ENV=lint
-sudo: false
+  - PYTHON="3.8"
+  - PYTHON="3.7"
+  - PYTHON="3.6"
 jobs:
   include:
+  - stage: lint
+    os: linux
+    script:
+    - pip install flake8
+    - make lint
+
   - stage: deploy
     if: tag =~ v.*$
     script: skip
@@ -25,6 +26,7 @@ jobs:
       user: mcflugen
       password:
         secure: SUvXMtJt/BrlKMBU1WDp9yQSm18yfjvPr7p0A5hjRykoKEtQ4kLbIuUXRLHyb9lnbuBen00oaCyJIjoYWWGbt0mcSLz39CMAgid1NsNMCq780c41IF2+Wm3HnUb9Ifm+38wNP/sqieGb6nm2Pq5sBHfeaB5+iCSup+fysOg6SvrCtxwCReNC0FeGD3dQ09XL6sk7rzmX78a5XXSSip5b/N0SAG9SgCiwkmCky4rZlZNWxBzrI5Gg0cYBNtw9HKCOZ/7xn3KvAdhz6i1t9sSzEIf6AFBSFX9D2/yratk7n60z3Os9sTX0Wve4wsk1+cYOtfe6x27/lN2Z0dgTAtY75DstCP5yIJeoYiFZaMTdg2mpY875xMPK95P2JYplyPdmTZPNaeJhR5qNwfn4LX97uK9sQ7lMm1U4qKxINMGd0ysacqnvvh0ndZs+hGudRVhfKM9Q4y+Gz5Snj6oLhP3XroB0WECJnj9DpOHpnCYbFFC0eOV2jUeqR4MMKbuAnuccdEqbaNdVpgKvL6OgWJrfpcHi1rcgLtZQNF4cBetWcqLet6JU/zrJcls2NXpe3LQKWpdxtXjN+8jqL5HOqEVtMc6Vekj3P0XYWsbfKAutsqKBO8NYIuSPsUaO0+qzVCWVV0URxZg0R/RoMHlolPQyz7OiHRECietiWV6wbYO0NZ8=
+
 before_install:
 - |
   if [[ $TRAVIS_OS_NAME == "osx" ]]; then
@@ -32,33 +34,24 @@ before_install:
     brew cleanup -s
     rm -rf $(brew --cache)
   fi
-install:
 - |
   if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-    curl https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh > $HOME/miniconda.sh
+    curl -L https://micromamba.snakepit.net/api/micromamba/osx-64/latest | tar -xvj bin/micromamba
   else
-    curl https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh > $HOME/miniconda.sh
+    curl -L https://micromamba.snakepit.net/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
   fi
-- bash $HOME/miniconda.sh -b -p $HOME/anaconda
-- export PATH="$HOME/anaconda/bin:$PATH"
-- hash -r
-- conda config --set always_yes yes --set changeps1 no
+- ./bin/micromamba shell init -s bash -p ~/micromamba
 - |
-  if [[ "$CONDA_ENV" == "docs" ]]; then
-    conda env create -n test_env --file docs/environment.yml
+  if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+    source $HOME/.bash_profile
   else
-    conda env create -n test_env --file ci/requirements-$CONDA_ENV-$TRAVIS_OS_NAME.yml
+    source $HOME/.bashrc
   fi
-- source activate test_env
-- pip install . -r requirements.txt
+- micromamba activate
+- micromamba install python=$PYTHON pip mamba --yes -c conda-forge
+install:
+- pip install -e .
 script:
-- |
-  if [[ "$CONDA_ENV" == "lint" ]]; then
-    make lint
-  elif [[ "$CONDA_ENV" == "docs" ]]; then
-    sphinx-apidoc --force -o docs/api model_metadata *tests
-    make -C docs clean html
-  else
-    pytest --cov=model_metadata --cov-report=xml:$(pwd)/coverage.xml -vvv
-  fi
+- pip install -r requirements-testing.txt
+- pytest --cov=model_metadata --cov-report=xml:$(pwd)/coverage.xml -vvv
 after_success: coveralls
