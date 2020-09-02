@@ -1,4 +1,7 @@
-coveralls
-pytest>=3.6
-pytest-cov
-pytest-datadir
+binaryornot
+click
+jinja2
+packaging
+pyyaml
+py-scripting
+six

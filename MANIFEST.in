@@ -1,2 +1,7 @@
-include versioneer.py
-include model_metadata/_version.py
+include *.rst
+include *.txt
+include *.yml
+include LICENSE
+include Makefile
+recursive-include tests *
+recursive-exclude conda-recipe *

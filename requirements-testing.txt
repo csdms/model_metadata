@@ -1,0 +1,4 @@
+coveralls
+pytest>=3.6
+pytest-cov
+pytest-datadir
