@@ -1,7 +1,7 @@
 Changelog for model_metadata
 ============================
 
-0.7.0 (unreleased)
+0.6.1 (2020-09-01)
 ------------------
 
 - Removed versioneer; use zest.releaser instead
