@@ -11,17 +11,34 @@ from model_metadata.errors import (
 )
 
 
+class Model:
+
+    pass
+
+
 @pytest.mark.parametrize("as_type", (str, pathlib.Path))
-def test_find_from_object(shared_datadir, as_type):
+def test_find_from_class(shared_datadir, as_type):
     class Model:
         METADATA = as_type(shared_datadir)
     assert shared_datadir.samefile(find(Model))
 
 
 @pytest.mark.parametrize("as_type", (str, pathlib.Path))
+def test_find_from_instance(shared_datadir, as_type):
+    class Model:
+        METADATA = as_type(shared_datadir)
+    assert shared_datadir.samefile(find(Model()))
+
+
+@pytest.mark.parametrize("as_type", (str, pathlib.Path))
 def test_find_from_path(shared_datadir, as_type):
     path_to_metadata = as_type(shared_datadir)
     assert shared_datadir.samefile(find(path_to_metadata))
+
+
+def test_find_from_entry_point(shared_datadir):
+    Model.METADATA = shared_datadir
+    assert shared_datadir.samefile(find(f"{__name__}:Model"))
 
 
 def test_find_bad_model_raises_not_found_error(shared_datadir):

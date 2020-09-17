@@ -3,6 +3,7 @@ import os
 import pathlib
 import pkg_resources
 import sys
+import warnings
 
 from scripting import cp, ln_s
 
@@ -55,17 +56,29 @@ def _search_paths(model):
     paths = []
     try:
         path_to_metadata = pathlib.Path(model.METADATA)
-    except (TypeError, AttributeError):
+    except AttributeError:
         pass
+    except TypeError:
+        warnings.warn("object has METADATA attribute but it is not path-like")
     else:
-        paths.append(
-            pkg_resources.resource_filename(model.__module__, "") / path_to_metadata
-        )
+        try:
+            model_module = model.__module__
+        except AttributeError:
+            model_module = model.__class__.__module__
+        finally:
+            paths.append(
+                (
+                    pkg_resources.resource_filename(model_module, "") / path_to_metadata
+                ).resolve()
+            )
 
     try:
         paths.append(pathlib.Path(model))
     except TypeError:
-        paths.append(pathlib.Path(model.__name__))
+        try:
+            paths.append(pathlib.Path(model.__name__))
+        except AttributeError:
+            pass
 
     try:
         paths.append(pathlib.Path(sys.prefix, "share", "csdms") / model)
