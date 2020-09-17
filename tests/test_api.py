@@ -10,6 +10,7 @@ from model_metadata.errors import (
     MetadataNotFoundError,
 )
 
+
 class Model:
 
     pass

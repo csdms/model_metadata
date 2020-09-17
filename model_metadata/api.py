@@ -3,6 +3,7 @@ import os
 import pathlib
 import pkg_resources
 import sys
+import warnings
 
 from scripting import cp, ln_s
 
