@@ -16,7 +16,7 @@ long_description = u'\n\n'.join(
 
 setup(
     name="model_metadata",
-    version="0.6.2",
+    version="0.6.3.dev0",
     description="Model Metadata",
     long_description=long_description,
     author="Eric Hutton",
