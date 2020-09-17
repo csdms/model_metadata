@@ -4,7 +4,9 @@ Changelog for model_metadata
 0.6.2 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Fixed a bug that raised "object has no attribute '__module__'"
+  exception when looking for metadata of an instance from an
+  extension module (#22)
 
 
 0.6.1 (2020-09-01)
