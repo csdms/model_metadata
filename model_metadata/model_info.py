@@ -3,7 +3,6 @@ import re
 import warnings
 from pprint import pformat
 
-import six
 import yaml
 from packaging.version import InvalidVersion, Version
 
@@ -46,7 +45,7 @@ def norm_authors(authors):
     >>> norm_authors(['John Cleese', 'Terry Gilliam', 'Idle, Eric'])
     ['John Cleese', 'Terry Gilliam', 'Eric Idle']
     """
-    if isinstance(authors, six.string_types):
+    if isinstance(authors, str):
         authors = authors.split(" and ")
 
     normed = []
@@ -116,12 +115,12 @@ def validate_version(version):
     try:
         Version(version)
     except InvalidVersion:
-        warnings.warn("{v}: version string does not follow PEP440".format(v=version))
+        warnings.warn(f"{version}: version string does not follow PEP440")
     return version
 
 
 def validate_is_str(s):
-    if isinstance(s, six.string_types):
+    if isinstance(s, str):
         return s
     else:
         raise TypeError("not a string")
@@ -154,7 +153,7 @@ class ModelInfo(object):
         summary=None,
         cite_as=None,
     ):
-        if isinstance(cite_as, six.string_types):
+        if isinstance(cite_as, str):
             cite_as = [cite_as]
 
         self._name = name
