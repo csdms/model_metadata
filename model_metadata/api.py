@@ -1,13 +1,7 @@
-import importlib
 import os
-import pathlib
-import pkg_resources
-import sys
-import warnings
 
 from .scripting import cp, ln_s
 
-from .errors import MetadataNotFoundError
 from .model_setup import FileSystemLoader, OldFileSystemLoader
 from .modelmetadata import ModelMetadata
 

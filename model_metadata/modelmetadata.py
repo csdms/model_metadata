@@ -112,7 +112,7 @@ class ModelMetadata:
         if isinstance(model, str) and ":" in model:
             try:
                 model = _load_component(model)
-            except ImportError as error:
+            except ImportError:
                 pass
 
         paths = []

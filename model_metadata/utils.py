@@ -19,7 +19,6 @@ def model_data_dir(name, datarootdir=None):
         The absolute path to the data directory for the model.
     """
     datarootdir = datarootdir or os.path.join(sys.prefix, "share")
-    # datarootdir = query_config_var('datarootdir')
     return os.path.join(datarootdir, "csdms", name)
 
 
