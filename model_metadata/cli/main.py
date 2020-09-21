@@ -5,7 +5,7 @@ import sys
 
 import click
 
-from ..api import _search_paths, find as _find, query as _query, stage as _stage
+from ..api import find as _find, query as _query, stage as _stage
 from ..errors import MetadataNotFoundError, MissingSectionError, MissingValueError
 from ..modelmetadata import ModelMetadata
 
@@ -22,7 +22,7 @@ class MetadataLocationParamType(click.Path):
         else:
             model = _find(load_component(value))
 
-        for p in _search_paths(model):
+        for p in ModelMetadata.search_paths(model):
             try:
                 return super(MetadataLocationParamType, self).convert(p, param, ctx)
             except Exception:
