@@ -5,87 +5,11 @@ import pkg_resources
 import sys
 import warnings
 
-from scripting import cp, ln_s
+from .scripting import cp, ln_s
 
 from .errors import MetadataNotFoundError
 from .model_setup import FileSystemLoader, OldFileSystemLoader
 from .modelmetadata import ModelMetadata
-
-
-def _load_component(entry_point):
-    if "" not in sys.path:
-        sys.path.append("")
-
-    module_name, cls_name = entry_point.split(":")
-
-    component = None
-    try:
-        module = importlib.import_module(module_name)
-    except ImportError:
-        raise
-    else:
-        try:
-            component = module.__dict__[cls_name]
-        except KeyError:
-            raise ImportError(cls_name)
-
-    return component
-
-
-def _search_paths(model):
-    """List of paths to search in looking for a model's metadata.
-
-    Parameters
-    ----------
-    model : path, str or object
-        The model is interpreted either as a path to a folder that
-        contains metadata, the name of a model component, or a
-        model object.
-
-    Returns
-    -------
-    list of Paths
-        Paths to search for metadata.
-    """
-    if isinstance(model, str) and ":" in model:
-        try:
-            model = _load_component(model)
-        except ImportError:
-            pass
-
-    paths = []
-    try:
-        path_to_metadata = pathlib.Path(model.METADATA)
-    except AttributeError:
-        pass
-    except TypeError:
-        warnings.warn("object has METADATA attribute but it is not path-like")
-    else:
-        try:
-            model_module = model.__module__
-        except AttributeError:
-            model_module = model.__class__.__module__
-        finally:
-            paths.append(
-                (
-                    pkg_resources.resource_filename(model_module, "") / path_to_metadata
-                ).resolve()
-            )
-
-    try:
-        paths.append(pathlib.Path(model))
-    except TypeError:
-        try:
-            paths.append(pathlib.Path(model.__name__))
-        except AttributeError:
-            pass
-
-    try:
-        paths.append(pathlib.Path(sys.prefix, "share", "csdms") / model)
-    except TypeError:
-        pass
-
-    return paths
 
 
 def find(model):
@@ -108,10 +32,7 @@ def find(model):
     MetadataNotFoundError
         If a metadata folder cannot be found.
     """
-    for p in _search_paths(model):
-        if p.is_dir():
-            return p
-    raise MetadataNotFoundError(str(model))
+    return ModelMetadata.find(model)
 
 
 def query(model, var):
@@ -133,7 +54,8 @@ def query(model, var):
     object
         The requested variable.
     """
-    return ModelMetadata(find(model)).get(var)
+    path_to_metadata = ModelMetadata.find(model)
+    return ModelMetadata(path_to_metadata).get(var)
 
 
 def stage(model, dest=".", old_style_templates=False):
@@ -149,7 +71,7 @@ def stage(model, dest=".", old_style_templates=False):
         Path to a folder within which to stage the model.
     """
     defaults = dict()
-    mmd = find(model)
+    mmd = ModelMetadata.find(model)
     meta = ModelMetadata(mmd)
     for param, item in meta.parameters.items():
         defaults[param] = item["value"]["default"]
