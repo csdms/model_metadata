@@ -2,15 +2,15 @@
 import importlib
 import os
 import pathlib
-import pkg_resources
 import sys
 import warnings
 
+import pkg_resources
 import yaml
 
-from .errors import MissingSectionError, MissingValueError, MetadataNotFoundError
-from .load import load_yaml_file
+from .errors import MetadataNotFoundError, MissingSectionError, MissingValueError
 from .find import find_metadata_files
+from .load import load_yaml_file
 from .model_info import ModelInfo
 from .model_parameter import parameter_from_dict, setup_yaml_with_canonical_dict
 

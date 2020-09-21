@@ -4,7 +4,6 @@ import os
 from .errors import MetadataNotFoundError
 from .scripting import as_cwd
 
-
 _METADATA_FILES = {
     "api.yaml",
     "api.yml",

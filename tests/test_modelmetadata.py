@@ -17,13 +17,20 @@ class BarBaz:
 
 
 @pytest.mark.parametrize(
-    "model", (
-        "FooBar", "./FooBar", pathlib.Path("./FooBar"), f"{__name__}:FooBar", FooBar, FooBar()
-    )
+    "model",
+    (
+        "FooBar",
+        "./FooBar",
+        pathlib.Path("./FooBar"),
+        f"{__name__}:FooBar",
+        FooBar,
+        FooBar(),
+    ),
 )
 def test_search_paths(model):
     assert ModelMetadata.search_paths(model) == [
-        pathlib.Path("FooBar"), pathlib.Path(sys.prefix) / "share" / "csdms" / "FooBar"
+        pathlib.Path("FooBar"),
+        pathlib.Path(sys.prefix) / "share" / "csdms" / "FooBar",
     ]
 
 
@@ -31,7 +38,8 @@ def test_search_paths(model):
 def test_search_paths_with_metadata(model):
     assert ModelMetadata.search_paths(model) == [
         pathlib.Path(__file__).parent / "FooBar",
-        pathlib.Path("BarBaz"), pathlib.Path(sys.prefix) / "share" / "csdms" / "BarBaz"
+        pathlib.Path("BarBaz"),
+        pathlib.Path(sys.prefix) / "share" / "csdms" / "BarBaz",
     ]
 
 

@@ -20,6 +20,7 @@ class Model:
 def test_find_from_class(shared_datadir, as_type):
     class Model:
         METADATA = as_type(shared_datadir)
+
     assert shared_datadir.samefile(find(Model))
 
 
@@ -27,6 +28,7 @@ def test_find_from_class(shared_datadir, as_type):
 def test_find_from_instance(shared_datadir, as_type):
     class Model:
         METADATA = as_type(shared_datadir)
+
     assert shared_datadir.samefile(find(Model()))
 
 

@@ -27,11 +27,11 @@ def get_cmdclass(paths, cmdclass=None):
     cmdclass = {} if cmdclass is None else cmdclass.copy()
 
     if "setuptools" in sys.modules:
-        from setuptools.command.install import install as _install
         from setuptools.command.develop import develop as _develop
+        from setuptools.command.install import install as _install
     else:
-        from distutils.command.install import install as _install
         from distutils.command.develop import develop as _develop
+        from distutils.command.install import install as _install
 
     sharedir = os.path.join(sys.prefix, "share")
 

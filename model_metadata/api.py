@@ -1,9 +1,8 @@
 import os
 
-from .scripting import cp, ln_s
-
 from .model_setup import FileSystemLoader, OldFileSystemLoader
 from .modelmetadata import ModelMetadata
+from .scripting import cp, ln_s
 
 
 def find(model):

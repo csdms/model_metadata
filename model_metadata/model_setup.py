@@ -9,7 +9,6 @@ from .find import find_model_data_files
 from .model_data_files import FileTemplate
 from .scripting import as_cwd
 
-
 TEXT_CHARACTERS = "".join(list(map(chr, range(32, 127))) + list("\n\r\t\b"))
 
 
@@ -126,9 +125,10 @@ class FileSystemLoader(object):
         self._base = os.path.abspath(searchpath)
 
     def stage_all(self, destdir, **defaults):
-        from jinja2 import Environment, FileSystemLoader
-        from .find import is_metadata_file
         from binaryornot.check import is_binary
+        from jinja2 import Environment, FileSystemLoader
+
+        from .find import is_metadata_file
 
         env = Environment(loader=FileSystemLoader(self._base))
         manifest = env.list_templates(filter_func=lambda f: not is_metadata_file(f))
