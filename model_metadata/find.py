@@ -1,9 +1,9 @@
 #! /usr/bin/env python
 import os
 
-from scripting.contexts import cd
-
 from .errors import MetadataNotFoundError
+from .scripting import as_cwd
+
 
 _METADATA_FILES = {
     "api.yaml",
@@ -49,7 +49,7 @@ def find_metadata_files(datadir):
         Paths to all metadata files.
     """
     try:
-        with cd(datadir, create=False):
+        with as_cwd(datadir, create=False):
             found = [fname for fname in _METADATA_FILES if os.path.isfile(fname)]
     except OSError as err:
         if err.errno == 2:
