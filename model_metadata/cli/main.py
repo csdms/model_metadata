@@ -5,7 +5,7 @@ import sys
 
 import click
 
-from ..api import query as _query, stage as _stage, find as _find, _search_paths
+from ..api import find as _find, query as _query, stage as _stage
 from ..errors import MetadataNotFoundError, MissingSectionError, MissingValueError
 from ..modelmetadata import ModelMetadata
 
@@ -22,7 +22,7 @@ class MetadataLocationParamType(click.Path):
         else:
             model = _find(load_component(value))
 
-        for p in _search_paths(model):
+        for p in ModelMetadata.search_paths(model):
             try:
                 return super(MetadataLocationParamType, self).convert(p, param, ctx)
             except Exception:
@@ -159,9 +159,7 @@ def query(metadata, var, all):
 @click.option("--old-style-templates", is_flag=True, help="use old-style templates")
 def stage(metadata, dest, quiet, old_style_templates):
     try:
-        manifest = _stage(
-            metadata, dest=dest, old_style_templates=old_style_templates
-        )
+        manifest = _stage(metadata, dest=dest, old_style_templates=old_style_templates)
     except MetadataNotFoundError as err:
         click.secho(err, err=True)
         sys.exit(1)

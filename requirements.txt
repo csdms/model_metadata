@@ -3,5 +3,3 @@ click
 jinja2
 packaging
 pyyaml
-py-scripting
-six

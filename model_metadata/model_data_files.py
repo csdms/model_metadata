@@ -3,7 +3,7 @@ import os
 import string
 import tempfile
 
-from scripting.contexts import cd, mkdir_p
+from .scripting import as_cwd, mkdir_p
 
 
 class SafeFormatter(string.Formatter):
@@ -104,7 +104,7 @@ def format_template_file(src, dest, **kwds):
     if ext == ".tmpl":
         dest = base
 
-    with cd(srcdir):
+    with as_cwd(srcdir):
         with open(fname, "r") as fp:
             template = fp.read()
 

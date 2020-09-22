@@ -4,7 +4,8 @@ Changelog for model_metadata
 0.6.3 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Added constructor for ModelMetadata that accepts an object rather than
+  a string, better searching for metadata.
 
 
 0.6.2 (2020-09-17)

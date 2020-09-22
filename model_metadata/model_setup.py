@@ -4,10 +4,10 @@ import os
 import shutil
 
 from binaryornot.check import is_binary
-from scripting.contexts import cd
 
 from .find import find_model_data_files
 from .model_data_files import FileTemplate
+from .scripting import as_cwd
 
 TEXT_CHARACTERS = "".join(list(map(chr, range(32, 127))) + list("\n\r\t\b"))
 
@@ -90,7 +90,7 @@ class OldFileSystemLoader(object):
     def stage_all(self, destdir, **kwds):
         sources = (os.path.relpath(fn, self.base) for fn in self.sources)
         manifest = []
-        with cd(destdir, create=True):
+        with as_cwd(destdir, create=True):
             for relpath in sources:
                 relpath = self.stage(relpath, **kwds)
                 if relpath:
@@ -125,15 +125,16 @@ class FileSystemLoader(object):
         self._base = os.path.abspath(searchpath)
 
     def stage_all(self, destdir, **defaults):
-        from jinja2 import Environment, FileSystemLoader
-        from .find import is_metadata_file
         from binaryornot.check import is_binary
+        from jinja2 import Environment, FileSystemLoader
+
+        from .find import is_metadata_file
 
         env = Environment(loader=FileSystemLoader(self._base))
         manifest = env.list_templates(filter_func=lambda f: not is_metadata_file(f))
-        with cd(destdir):
+        with as_cwd(destdir):
             for fname in manifest:
-                with cd(os.path.dirname(fname) or ".", create=True):
+                with as_cwd(os.path.dirname(fname) or ".", create=True):
                     pass
                 # if is_text_file(os.path.join(self._base, fname)):
                 if not is_binary(os.path.join(self._base, fname)):

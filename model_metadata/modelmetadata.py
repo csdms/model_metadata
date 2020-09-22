@@ -1,13 +1,16 @@
 #! /usr/bin/env python
+import importlib
 import os
+import pathlib
+import sys
 import warnings
 
-import six
+import pkg_resources
 import yaml
 
-from .errors import MissingSectionError, MissingValueError
-from .load import load_yaml_file
+from .errors import MetadataNotFoundError, MissingSectionError, MissingValueError
 from .find import find_metadata_files
+from .load import load_yaml_file
 from .model_info import ModelInfo
 from .model_parameter import parameter_from_dict, setup_yaml_with_canonical_dict
 
@@ -21,7 +24,7 @@ def normalize_run_section(run):
         pass
     elif "config_file" not in run:
         pass
-    elif isinstance(run["config_file"], six.string_types):
+    elif isinstance(run["config_file"], str):
         normed["config_file"]["path"] = run["config_file"]
     else:
         for key in ("path", "contents"):
@@ -30,12 +33,34 @@ def normalize_run_section(run):
     return normed
 
 
-class ModelMetadata(object):
+def _load_component(entry_point):
+    if "" not in sys.path:
+        sys.path.append("")
+
+    module_name, cls_name = entry_point.split(":")
+
+    component = None
+    try:
+        module = importlib.import_module(module_name)
+    except ImportError:
+        raise
+    else:
+        try:
+            component = module.__dict__[cls_name]
+        except KeyError:
+            raise ImportError(cls_name)
+
+    return component
+
+
+class ModelMetadata:
 
     SECTIONS = ("api", "info", "parameters", "run")
 
     def __init__(self, path):
+        # self._path = find(path)
         self._path = os.path.abspath(path)
+
         self._files = find_metadata_files(self._path)
         self._meta = self.load_all()
 
@@ -62,6 +87,97 @@ class ModelMetadata(object):
                     name=name
                 )
             )
+
+    @classmethod
+    def from_obj(cls, obj):
+        path_to_metadata = ModelMetadata.find(obj)
+        return cls(path_to_metadata)
+
+    @staticmethod
+    def search_paths(model):
+        """List of paths to search in looking for a model's metadata.
+
+        Parameters
+        ----------
+        model : path, str or object
+            The model is interpreted either as a path to a folder that
+            contains metadata, the name of a model component, or a
+            model object.
+
+        Returns
+        -------
+        list of Paths
+            Paths to search for metadata.
+        """
+        if isinstance(model, str) and ":" in model:
+            try:
+                model = _load_component(model)
+            except ImportError:
+                pass
+
+        paths = []
+
+        def _model_module(model):
+            try:
+                return model.__module__
+            except AttributeError:
+                return model.__class__.__module__
+
+        def _model_name(model):
+            try:
+                return model.__name__
+            except AttributeError:
+                return model.__class__.__name__
+
+        if hasattr(model, "METADATA"):
+            path_to_module = pkg_resources.resource_filename(_model_module(model), "")
+
+            try:
+                path_to_metadata = pathlib.Path(model.METADATA)
+            except TypeError:
+                warnings.warn("object has METADATA attribute but it is not path-like")
+            else:
+                paths.append((path_to_module / path_to_metadata).resolve())
+
+        try:
+            paths.append(pathlib.Path(model))
+        except TypeError:
+            paths.append(pathlib.Path(_model_name(model)))
+
+        sharedir = pathlib.Path(sys.prefix, "share", "csdms")
+
+        try:
+            paths.append(sharedir / model)
+        except TypeError:
+            paths.append(sharedir / _model_name(model))
+
+        return paths
+
+    @staticmethod
+    def find(model):
+        """Attempt to find a model's metadata.
+
+        Parameters
+        ----------
+        model : path, str or object
+            The model is interpreted either as a path to a folder that
+            contains metadata, the name of a model component, or a
+            model object.
+
+        Returns
+        -------
+        Path
+            Path to the folder that contains the model's metadata.
+
+        Raises
+        ------
+        MetadataNotFoundError
+            If a metadata folder cannot be found.
+        """
+        for p in ModelMetadata.search_paths(model):
+            if p.is_dir():
+                return p
+        raise MetadataNotFoundError(str(model))
 
     def get(self, key):
         """Get a metadata value with dotted notation.
