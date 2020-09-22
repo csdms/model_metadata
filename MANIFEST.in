@@ -3,5 +3,7 @@ include *.txt
 include *.yml
 include LICENSE
 include Makefile
-recursive-include tests *
+recursive-include tests *.in
+recursive-include tests *.py
+recursive-include tests *.yaml
 recursive-exclude conda-recipe *
