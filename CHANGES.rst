@@ -1,7 +1,7 @@
 Changelog for model_metadata
 ============================
 
-0.6.3 (unreleased)
+0.7.0 (2020-09-22)
 ------------------
 
 - Added constructor for ModelMetadata that accepts an object rather than
