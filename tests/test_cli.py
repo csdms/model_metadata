@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import os
 import pathlib
-import sys
 
 import pytest
 from click.testing import CliRunner
