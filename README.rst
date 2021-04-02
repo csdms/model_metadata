@@ -147,10 +147,9 @@ These tools are currently used by:
 -  Commandline utilities for quering model metadata, and staging model
    simulations.
 
-.. |Build Status| image:: https://travis-ci.org/csdms/model_metadata.svg?branch=master
-   :target: https://travis-ci.org/csdms/model_metadata
-.. |Build status| image:: https://ci.appveyor.com/api/projects/status/ypkgfrren37xja4t/branch/develop?svg=true
-   :target: https://ci.appveyor.com/project/mcflugen/model-metadata/branch/develop
+
+.. |Build Status| image:: https://github.com/csdms/model_metadata/actions/workflows/test.yml/badge.svg
+   :target: https://github.com/csdms/model_metadata/actions/workflows/test.yml
 .. |Coverage Status| image:: https://coveralls.io/repos/github/csdms/model_metadata/badge.svg?branch=master
    :target: https://coveralls.io/github/csdms/model_metadata?branch=master
 .. |Anaconda-Server Badge| image:: https://anaconda.org/conda-forge/model_metadata/badges/version.svg
