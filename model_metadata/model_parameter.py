@@ -208,6 +208,8 @@ def parameter_from_dict(d):
         return FileParameter(value, **kwds)
     elif dtype in ("bool", "boolean"):
         return BooleanParameter(value, **kwds)
+    elif dtype in ("list",):
+        return ListParameter(value, **kwds)
     else:
         raise ValueError("{dtype}: unknown parameter type".format(dtype=dtype))
 
@@ -255,6 +257,23 @@ class StringParameter(ModelParameterMixIn):
 
     def __init__(self, value, **kwds):
         self._value = str(value)
+        self._desc = kwds.get("desc", None)
+
+    @property
+    def desc(self):
+        return self._desc
+
+    @property
+    def value(self):
+        return self._value
+
+
+class ListParameter(ModelParameterMixIn):
+
+    _dtype = "list"
+
+    def __init__(self, value, **kwds):
+        self._value = list(value)
         self._desc = kwds.get("desc", None)
 
     @property
@@ -425,6 +444,8 @@ class ModelParameter(object):
             return "float"
         elif self.dtype is str:
             return "str"
+        elif self.dtype is list:
+            return "list"
         else:
             return self.dtype
 
@@ -459,6 +480,8 @@ class ModelParameter(object):
             dtype = float
         elif dtype in ("str", "string", "file", "choice"):
             dtype = str
+        elif dtype in ("list",):
+            dtype = list
 
         if isinstance(range, dict):
             range = (range["min"], range["max"])
