@@ -7,8 +7,11 @@ import os
 import pathlib
 import sys
 import warnings
-import importlib_resources
 
+if sys.version_info >= (3, 12):  # pragma: no cover (PY12+)
+    from importlib.resources import files
+else:  # pragma: no cover (<PY312)
+    from importlib_resources import files
 import yaml
 from model_metadata.errors import MetadataNotFoundError
 from model_metadata.errors import MissingSectionError
@@ -129,7 +132,7 @@ class ModelMetadata:
                 return model.__class__.__name__
 
         if hasattr(model, "METADATA"):
-            path_to_module = importlib_resources.files(_model_module(model))
+            path_to_module = files(_model_module(model))
 
             try:
                 path_to_metadata = pathlib.Path(model.METADATA)
