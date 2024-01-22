@@ -1,18 +1,17 @@
+from __future__ import annotations
+
 import pathlib
 import sys
 
 import pytest
-
 from model_metadata import ModelMetadata
 
 
 class FooBar:
-
     pass
 
 
 class BarBaz:
-
     METADATA = "FooBar"
 
 

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 
 import yaml
@@ -8,7 +10,7 @@ def load_yaml_file(file_like):
         contents = file_like.read()
     except AttributeError:
         if os.path.isfile(file_like):
-            with open(file_like, "r") as fp:
+            with open(file_like) as fp:
                 contents = fp.read()
         else:
             contents = None
@@ -40,7 +42,7 @@ def load_meta_section(path, section):
     try:
         meta_section = meta[section]
     except KeyError:
-        section_path = os.path.join(path, "{section}.yaml".format(section=section))
+        section_path = os.path.join(path, f"{section}.yaml")
         meta_section = load_yaml_file(section_path) or {}
 
     return meta_section

@@ -1,18 +1,19 @@
+from __future__ import annotations
+
 import os
 import pathlib
 
 import pytest
-
-from model_metadata.api import find, query, stage, install
-from model_metadata.errors import (
-    MissingValueError,
-    MissingSectionError,
-    MetadataNotFoundError,
-)
+from model_metadata.api import find
+from model_metadata.api import install
+from model_metadata.api import query
+from model_metadata.api import stage
+from model_metadata.errors import MetadataNotFoundError
+from model_metadata.errors import MissingSectionError
+from model_metadata.errors import MissingValueError
 
 
 class Model:
-
     pass
 
 
@@ -122,7 +123,7 @@ def test_stage_is_filled_out(tmpdir, shared_datadir):
     with tmpdir.as_cwd():
         stage(str(shared_datadir), "./the_stage")
 
-        with open("the_stage/child.in", "r") as fp:
+        with open("the_stage/child.in") as fp:
             contents = fp.read()
         assert "{{" not in contents
         assert "}}" not in contents
@@ -139,12 +140,10 @@ def test_query_with_bad_value(shared_datadir):
 
 
 def test_query_with_bad_path(tmpdir):
-    with pytest.raises(MetadataNotFoundError):
-        with tmpdir.as_cwd():
-            query("./not/a/path", "info.version")
+    with pytest.raises(MetadataNotFoundError), tmpdir.as_cwd():
+        query("./not/a/path", "info.version")
 
 
 def test_stage_with_bad_path(tmpdir):
-    with pytest.raises(MetadataNotFoundError):
-        with tmpdir.as_cwd():
-            stage("./not/a/path", ".")
+    with pytest.raises(MetadataNotFoundError), tmpdir.as_cwd():
+        stage("./not/a/path", ".")

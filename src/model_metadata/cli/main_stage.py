@@ -1,12 +1,12 @@
 #! /usr/bin/env python
-from __future__ import print_function
+from __future__ import annotations
 
 import argparse
 import os
 import sys
 import textwrap
 
-from ..api import stage
+from model_metadata.api import stage
 
 
 def configure_parser_mmd_stage(sub_parsers=None):

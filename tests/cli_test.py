@@ -1,11 +1,13 @@
 #!/usr/bin/env python
-import os
+from __future__ import annotations
+
 import pathlib
 
 import pytest
 from click.testing import CliRunner
-
 from model_metadata.cli.main import mmd
+
+# import os
 
 
 def test_command_line_interface():
@@ -34,7 +36,7 @@ def test_stage_subcommand(tmpdir, shared_datadir):
         result = runner.invoke(mmd, ["stage", str(shared_datadir), str(stagedir)])
         assert result.exit_code == 0
         manifest = result.stdout.splitlines()
-        assert set(stagedir.iterdir()) == set([stagedir / fname for fname in manifest])
+        assert set(stagedir.iterdir()) == {stagedir / fname for fname in manifest}
 
 
 def test_stage_subcommand_without_manifest(tmpdir, shared_datadir):
@@ -43,7 +45,7 @@ def test_stage_subcommand_without_manifest(tmpdir, shared_datadir):
     stagedir.mkdir()
     with tmpdir.as_cwd():
         result = runner.invoke(mmd, ["stage", "-q", str(shared_datadir), str(stagedir)])
-        assert set(stagedir.iterdir()) == set([stagedir / "child.in"])
+        assert set(stagedir.iterdir()) == {stagedir / "child.in"}
         assert result.exit_code == 0
         assert result.stdout == ""
 
@@ -73,10 +75,13 @@ def test_query_subcommand_missing_values(shared_datadir):
     assert result.exit_code == 2
 
 
-@pytest.mark.parametrize("entry_point", ("model:ModelString", "model:ModelPath"))
+# @pytest.mark.parametrize("entry_point", ("model:ModelString", "model:ModelPath"))
+@pytest.mark.parametrize(
+    "entry_point", ("testing.model:ModelString", "testing.model:ModelPath")
+)
 def test_find(datadir, entry_point):
     runner = CliRunner()
-    os.chdir(datadir)
+    # os.chdir(datadir)
     result = runner.invoke(mmd, ["find", entry_point])
     assert result.exit_code == 0
     assert (pathlib.Path(result.stdout.strip()) / "model.py").is_file()
@@ -85,8 +90,8 @@ def test_find(datadir, entry_point):
 
 def test_find_absolute_path(datadir):
     runner = CliRunner()
-    os.chdir(datadir)
-    result = runner.invoke(mmd, ["find", "model:ModelAbsolutePath"])
+    # os.chdir(datadir)
+    result = runner.invoke(mmd, ["find", "testing.model:ModelAbsolutePath"])
     actual = pathlib.PurePath(result.stdout.strip())
 
     assert result.exit_code == 0

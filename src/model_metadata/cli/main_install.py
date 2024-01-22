@@ -1,13 +1,13 @@
 #! /usr/bin/env python
-from __future__ import print_function
+from __future__ import annotations
 
 import argparse
 import os
 import sys
 import textwrap
 
-from ..api import install
-from ..modelmetadata import ModelMetadata
+from model_metadata.api import install
+from model_metadata.modelmetadata import ModelMetadata
 
 
 def configure_parser_mmd_install(sub_parsers=None):

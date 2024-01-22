@@ -1,13 +1,14 @@
 #! /usr/bin/env python
-from __future__ import print_function
+from __future__ import annotations
 
 import argparse
 import importlib
 import sys
 import textwrap
 
-from ..api import query
-from ..errors import MissingSectionError, MissingValueError
+from model_metadata.api import query
+from model_metadata.errors import MissingSectionError
+from model_metadata.errors import MissingValueError
 
 
 def configure_parser_mmd_query(sub_parsers=None):
@@ -62,9 +63,9 @@ def execute(args):
         try:
             value = query(model, var)
         except MissingSectionError as err:
-            print("{0}: Missing section".format(err.name), file=sys.stderr)
+            print(f"{err.name}: Missing section", file=sys.stderr)
         except MissingValueError as err:
-            print("{0}: Missing value".format(err.name), file=sys.stderr)
+            print(f"{err.name}: Missing value", file=sys.stderr)
         else:
             print(value, file=sys.stdout)
 

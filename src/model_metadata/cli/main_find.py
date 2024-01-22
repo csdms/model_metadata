@@ -1,13 +1,13 @@
 #! /usr/bin/env python
-from __future__ import print_function
+from __future__ import annotations
 
 import argparse
 import os
 import sys
 import textwrap
 
-from ..find import find_metadata_files
-from ..model_setup import FileSystemLoader
+from model_metadata.find import find_metadata_files
+from model_metadata.model_setup import FileSystemLoader
 
 
 def configure_parser_mmd_find(sub_parsers=None):

@@ -1,8 +1,10 @@
 #! /usr/bin/env python
+from __future__ import annotations
+
 import os
 import sys
 
-from .api import install as install_mmd
+from model_metadata.api import install as install_mmd
 
 
 def model_data_dir(name, datarootdir=None):
@@ -23,7 +25,6 @@ def model_data_dir(name, datarootdir=None):
 
 
 def get_cmdclass(paths, cmdclass=None):
-
     cmdclass = {} if cmdclass is None else cmdclass.copy()
 
     if "setuptools" in sys.modules:

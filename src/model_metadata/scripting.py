@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import contextlib
 import errno
 import os
@@ -55,7 +57,7 @@ def cp(source, dest, dry_run=False, clobber=True, create_dirs=False, silent=Fals
 
     if not dry_run:
         if os.path.isfile(dest) and not clobber:
-            raise OSError("{0}: file exists".format(dest))
+            raise OSError(f"{dest}: file exists")
         elif os.path.islink(dest):
             os.remove(dest)
 
@@ -96,7 +98,7 @@ def ln_s(source, dest, dry_run=False, clobber=True, create_dirs=False, silent=Fa
             if clobber:
                 os.remove(dest)
             else:
-                raise OSError("{0}: file exists".format(dest))
+                raise OSError(f"{dest}: file exists")
 
         with as_cwd(os.path.dirname(dest) or ".", create=create_dirs):
             pass

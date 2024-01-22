@@ -1,4 +1,7 @@
 #! /usr/bin/env python
+from __future__ import annotations
+
+import contextlib
 import re
 import sys
 from collections import OrderedDict
@@ -7,7 +10,7 @@ import yaml
 
 
 def setup_yaml_with_canonical_dict():
-    """ https://stackoverflow.com/a/8661021 """
+    """https://stackoverflow.com/a/8661021"""
     yaml.add_representer(
         OrderedDict,
         lambda self, data: self.represent_mapping(
@@ -42,7 +45,7 @@ def setup_yaml_with_canonical_dict():
     yaml.add_representer(tuple, repr_tuple, Dumper=yaml.SafeDumper)
 
     yaml.add_implicit_resolver(
-        u"tag:yaml.org,2002:float",
+        "tag:yaml.org,2002:float",
         re.compile(
             r"""^(?:
          [-+]?(?:[0-9][0-9_]*)\.[0-9_]*(?:[eE][-+]?[0-9]+)?
@@ -159,10 +162,8 @@ def infer_type(value):
     try:
         inferred = int(inferred)
     except ValueError:
-        try:
+        with contextlib.suppress(ValueError):
             inferred = float(inferred)
-        except ValueError:
-            pass
 
     if isinstance(inferred, str):
         if inferred in ("True", "False"):
@@ -178,7 +179,7 @@ def infer_type(value):
 
 
 def parameter_from_dict(d):
-    kwds = dict(desc=d.get("description", None) or d.get("desc", None))
+    kwds = {"desc": d.get("description") or d.get("desc")}
 
     value = d["value"]
     if isinstance(value, dict):
@@ -194,7 +195,7 @@ def parameter_from_dict(d):
     if "range" in kwds and isinstance(kwds["range"], dict):
         kwds["range"] = (kwds["range"]["min"], kwds["range"]["max"])
 
-    dtype = kwds.get("type", None) or infer_type(value)
+    dtype = kwds.get("type") or infer_type(value)
 
     if dtype in ("float", "double"):
         return FloatParameter(value, **kwds)
@@ -209,10 +210,10 @@ def parameter_from_dict(d):
     elif dtype in ("bool", "boolean"):
         return BooleanParameter(value, **kwds)
     else:
-        raise ValueError("{dtype}: unknown parameter type".format(dtype=dtype))
+        raise ValueError(f"{dtype}: unknown parameter type")
 
 
-class ModelParameterMixIn(object):
+class ModelParameterMixIn:
     def as_dict(self):
         d = {
             "description": self.desc,
@@ -245,17 +246,16 @@ class ModelParameterMixIn(object):
             pass
         else:
             for arg in kwds:
-                args.append("{k}={v}".format(k=arg, v=repr(getattr(self, arg))))
+                args.append(f"{arg}={repr(getattr(self, arg))}")
         return "{cls}({args})".format(cls=self.__class__.__name__, args=", ".join(args))
 
 
 class StringParameter(ModelParameterMixIn):
-
     _dtype = "str"
 
     def __init__(self, value, **kwds):
         self._value = str(value)
-        self._desc = kwds.get("desc", None)
+        self._desc = kwds.get("desc")
 
     @property
     def desc(self):
@@ -267,12 +267,11 @@ class StringParameter(ModelParameterMixIn):
 
 
 class NumberParameter(StringParameter, ModelParameterMixIn):
-
     _kwds = ("units", "range")
 
     def __init__(self, value, **kwds):
-        range = range_as_tuple(kwds.get("range", None))
-        units = kwds.get("units", None)
+        range = range_as_tuple(kwds.get("range"))
+        units = kwds.get("units")
 
         if range is not None and len(range) != 2:
             raise ValueError("range must be either None or (min, max)")
@@ -302,7 +301,6 @@ class NumberParameter(StringParameter, ModelParameterMixIn):
 
 
 class ChoiceParameter(StringParameter, ModelParameterMixIn):
-
     _dtype = "str"
     _kwds = ("choices",)
 
@@ -322,7 +320,6 @@ class ChoiceParameter(StringParameter, ModelParameterMixIn):
 
 
 class BooleanParameter(ChoiceParameter, ModelParameterMixIn):
-
     _dtype = "bool"
     _kwds = ("true_value", "false_value")
 
@@ -347,7 +344,6 @@ class BooleanParameter(ChoiceParameter, ModelParameterMixIn):
 
 
 class FileParameter(ChoiceParameter, ModelParameterMixIn):
-
     _dtype = "str"
     _kwds = ("files",)
 
@@ -362,7 +358,6 @@ class FileParameter(ChoiceParameter, ModelParameterMixIn):
 
 
 class FloatParameter(NumberParameter, ModelParameterMixIn):
-
     _dtype = "float"
 
     def __init__(self, value, **kwds):
@@ -372,7 +367,6 @@ class FloatParameter(NumberParameter, ModelParameterMixIn):
 
 
 class IntParameter(NumberParameter, ModelParameterMixIn):
-
     _dtype = "int"
 
     def __init__(self, value, **kwds):
@@ -381,7 +375,7 @@ class IntParameter(NumberParameter, ModelParameterMixIn):
         self._value = int(self._value)
 
 
-class ModelParameter(object):
+class ModelParameter:
 
     """An input parameter for a model."""
 
@@ -442,16 +436,16 @@ class ModelParameter(object):
 
     @staticmethod
     def norm(param):
-        desc = param.get("description", None) or param.get("desc", None)
+        desc = param.get("description") or param.get("desc")
 
         value = param["value"]
         if isinstance(value, dict):
             value = param["value"]["default"]
             attrs = param["value"]
 
-        units = attrs.get("units", None)
-        range = attrs.get("range", None)
-        dtype = attrs.get("type", None)
+        units = attrs.get("units")
+        range = attrs.get("range")
+        dtype = attrs.get("type")
 
         if dtype == "int":
             dtype = int
@@ -470,7 +464,7 @@ class ModelParameter(object):
     def as_dict(self):
         range = self.range
         if range:
-            range = dict(min=self.dtype(range[0]), max=self.dtype(range[1]))
+            range = {"min": self.dtype(range[0]), "max": self.dtype(range[1])}
 
         d = {
             "description": self.desc,
@@ -492,5 +486,5 @@ class ModelParameter(object):
     def __repr__(self):
         args = [repr(self.value)]
         for arg in self._kwds:
-            args.append("{k}={v}".format(k=arg, v=repr(getattr(self, arg))))
+            args.append(f"{arg}={repr(getattr(self, arg))}")
         return "{cls}({args})".format(cls=self.__class__, args=", ".join(args))

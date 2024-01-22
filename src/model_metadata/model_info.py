@@ -1,13 +1,15 @@
 #! /usr/bin/env python
+from __future__ import annotations
+
 import re
 import warnings
 from pprint import pformat
 
 import yaml
-from packaging.version import InvalidVersion, Version
-
-from .load import load_meta_section
-from .model_parameter import setup_yaml_with_canonical_dict
+from model_metadata.load import load_meta_section
+from model_metadata.model_parameter import setup_yaml_with_canonical_dict
+from packaging.version import InvalidVersion
+from packaging.version import Version
 
 setup_yaml_with_canonical_dict()
 
@@ -92,21 +94,21 @@ def validate_email(email):
     ValueError: Terry.Jones@monty: invalid email address
     """
     if not re.match(EMAIL_REGEX, email):
-        raise ValueError("{email}: invalid email address".format(email=email))
+        raise ValueError(f"{email}: invalid email address")
     return email
 
 
 def validate_url(url):
     """Validate a URL string."""
     if not re.match(URL_REGEX, url):
-        raise ValueError("{url}: invalid URL".format(url=url))
+        raise ValueError(f"{url}: invalid URL")
     return url
 
 
 def validate_doi(doi):
     """Validate a DOI string."""
     if not re.match(DOI_REGEX, doi):
-        raise ValueError("{doi}: invalid DOI".format(doi=doi))
+        raise ValueError(f"{doi}: invalid DOI")
     return doi
 
 
@@ -115,7 +117,7 @@ def validate_version(version):
     try:
         Version(version)
     except InvalidVersion:
-        warnings.warn(f"{version}: version string does not follow PEP440")
+        warnings.warn(f"{version}: version string does not follow PEP440", stacklevel=2)
     return version
 
 
@@ -137,7 +139,7 @@ def object_properties(obj):
     return props
 
 
-class ModelInfo(object):
+class ModelInfo:
 
     """Information about a model."""
 
@@ -222,7 +224,7 @@ class ModelInfo(object):
     def norm(params):
         for key in ("initialize_args", "class", "id"):
             if params.pop(key, None):
-                warnings.warn("ignoring '{0}' in info section".format(key))
+                warnings.warn(f"ignoring '{key}' in info section", stacklevel=2)
         name = params.pop("name", "?")
         return ModelInfo(name, **params).as_dict()
 

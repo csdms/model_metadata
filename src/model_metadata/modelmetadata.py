@@ -1,18 +1,22 @@
 #! /usr/bin/env python
+from __future__ import annotations
+
+import contextlib
 import importlib
 import os
 import pathlib
 import sys
 import warnings
 
-import pkg_resources
 import yaml
-
-from .errors import MetadataNotFoundError, MissingSectionError, MissingValueError
-from .find import find_metadata_files
-from .load import load_yaml_file
-from .model_info import ModelInfo
-from .model_parameter import parameter_from_dict, setup_yaml_with_canonical_dict
+from model_metadata.errors import MetadataNotFoundError
+from model_metadata.errors import MissingSectionError
+from model_metadata.errors import MissingValueError
+from model_metadata.find import find_metadata_files
+from model_metadata.load import load_yaml_file
+from model_metadata.model_info import ModelInfo
+from model_metadata.model_parameter import parameter_from_dict
+from model_metadata.model_parameter import setup_yaml_with_canonical_dict
 
 setup_yaml_with_canonical_dict()
 
@@ -20,15 +24,13 @@ setup_yaml_with_canonical_dict()
 def normalize_run_section(run):
     normed = {"config_file": {"path": None, "contents": None}}
 
-    if run is None:
-        pass
-    elif "config_file" not in run:
+    if (run is None) or ("config_file" not in run):
         pass
     elif isinstance(run["config_file"], str):
         normed["config_file"]["path"] = run["config_file"]
     else:
         for key in ("path", "contents"):
-            normed["config_file"][key] = run["config_file"].get(key, None)
+            normed["config_file"][key] = run["config_file"].get(key)
 
     return normed
 
@@ -54,7 +56,6 @@ def _load_component(entry_point):
 
 
 class ModelMetadata:
-
     SECTIONS = ("api", "info", "parameters", "run")
 
     def __init__(self, path):
@@ -66,7 +67,7 @@ class ModelMetadata:
 
         self._meta["info"].setdefault("name", self.api["name"])
         self._meta["info"] = ModelInfo.norm(self._meta["info"])
-        self._meta["run"] = normalize_run_section(self._meta.get("run", None))
+        self._meta["run"] = normalize_run_section(self._meta.get("run"))
 
         params = self._meta.pop("parameters", {})
         self._meta["parameters"] = {}
@@ -76,16 +77,15 @@ class ModelMetadata:
             try:
                 param = parameter_from_dict(params[name]).as_dict()
             except ValueError:
-                raise ValueError("{name}: unable to load parameter".format(name=name))
+                raise ValueError(f"{name}: unable to load parameter")
             else:
                 self._meta["parameters"][name] = param
 
         private = (name for name in params if name.startswith("_"))
         for name in private:
             warnings.warn(
-                "{name}: ignoring private attribute in parameters section".format(
-                    name=name
-                )
+                f"{name}: ignoring private attribute in parameters section",
+                stacklevel=2,
             )
 
     @classmethod
@@ -110,10 +110,8 @@ class ModelMetadata:
             Paths to search for metadata.
         """
         if isinstance(model, str) and ":" in model:
-            try:
+            with contextlib.suppress(ImportError):
                 model = _load_component(model)
-            except ImportError:
-                pass
 
         paths = []
 
@@ -130,12 +128,15 @@ class ModelMetadata:
                 return model.__class__.__name__
 
         if hasattr(model, "METADATA"):
-            path_to_module = pkg_resources.resource_filename(_model_module(model), "")
+            path_to_module = importlib.resources.files(_model_module(model))
 
             try:
                 path_to_metadata = pathlib.Path(model.METADATA)
             except TypeError:
-                warnings.warn("object has METADATA attribute but it is not path-like")
+                warnings.warn(
+                    "object has METADATA attribute but it is not path-like",
+                    stacklevel=2,
+                )
             else:
                 paths.append((path_to_module / path_to_metadata).resolve())
 
@@ -251,9 +252,7 @@ class ModelMetadata:
         try:
             meta_section = meta[section]
         except KeyError:
-            section_path = os.path.join(
-                self.base, "{section}.yaml".format(section=section)
-            )
+            section_path = os.path.join(self.base, f"{section}.yaml")
             meta_section = load_yaml_file(section_path) or {}
 
         return meta_section

@@ -1,8 +1,10 @@
 #! /usr/bin/env python
+from __future__ import annotations
+
 import os
 
-from .errors import MetadataNotFoundError
-from .scripting import as_cwd
+from model_metadata.errors import MetadataNotFoundError
+from model_metadata.scripting import as_cwd
 
 _METADATA_FILES = {
     "api.yaml",

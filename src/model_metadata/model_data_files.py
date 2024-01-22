@@ -1,15 +1,18 @@
 #! /usr/bin/env python
+from __future__ import annotations
+
 import os
 import string
 import tempfile
 
-from .scripting import as_cwd, mkdir_p
+from model_metadata.scripting import as_cwd
+from model_metadata.scripting import mkdir_p
 
 
 class SafeFormatter(string.Formatter):
     def get_field(self, field_name, args, kwargs):
         try:
-            val = super(SafeFormatter, self).get_field(field_name, args, kwargs)
+            val = super().get_field(field_name, args, kwargs)
         except (KeyError, AttributeError):
             val = "{" + field_name + "}", field_name
 
@@ -17,13 +20,12 @@ class SafeFormatter(string.Formatter):
 
     def format_field(self, value, spec):
         try:
-            return super(SafeFormatter, self).format_field(value, spec)
+            return super().format_field(value, spec)
         except ValueError:
             return value
 
 
-class FileTemplate(object):
-
+class FileTemplate:
     _formatter = SafeFormatter()
 
     def __init__(self, path):
@@ -39,7 +41,7 @@ class FileTemplate(object):
         return self._tail
 
     def render(self, **kwds):
-        with open(self.path, "r") as fp:
+        with open(self.path) as fp:
             template = fp.read()
         return self._formatter.format(template, **kwds)
 
@@ -69,7 +71,7 @@ class FileTemplate(object):
     def write(file_like, dest, **kwds):
         if os.path.isfile(dest):
             if file_like:
-                raise ValueError("{dest}: destination already exists".format(dest=dest))
+                raise ValueError(f"{dest}: destination already exists")
             else:
                 return dest
         elif os.path.isdir(dest):
@@ -105,7 +107,7 @@ def format_template_file(src, dest, **kwds):
         dest = base
 
     with as_cwd(srcdir):
-        with open(fname, "r") as fp:
+        with open(fname) as fp:
             template = fp.read()
 
         with open(dest, "w") as fp:

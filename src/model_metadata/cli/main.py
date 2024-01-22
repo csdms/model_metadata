@@ -1,20 +1,25 @@
+from __future__ import annotations
+
+import contextlib
 import importlib
 import os
 import re
 import sys
 
 import click
-
-from ..api import find as _find, query as _query, stage as _stage
-from ..errors import MetadataNotFoundError, MissingSectionError, MissingValueError
-from ..modelmetadata import ModelMetadata
+from model_metadata.api import find as _find
+from model_metadata.api import query as _query
+from model_metadata.api import stage as _stage
+from model_metadata.errors import MetadataNotFoundError
+from model_metadata.errors import MissingSectionError
+from model_metadata.errors import MissingValueError
+from model_metadata.modelmetadata import ModelMetadata
 
 
 class MetadataLocationParamType(click.Path):
     name = "metadata"
 
     def convert(self, value, param, ctx):
-
         try:
             validate_entry_point(ctx, param, value)
         except (ValueError, click.BadParameter):
@@ -23,15 +28,13 @@ class MetadataLocationParamType(click.Path):
             model = _find(load_component(value))
 
         for p in ModelMetadata.search_paths(model):
-            try:
-                return super(MetadataLocationParamType, self).convert(p, param, ctx)
-            except Exception:
-                pass
+            with contextlib.suppress(Exception):
+                return super().convert(p, param, ctx)
 
-        return super(MetadataLocationParamType, self).convert(value, param, ctx)
+        return super().convert(value, param, ctx)
 
         try:
-            return super(MetadataLocationParamType, self).convert(value, param, ctx)
+            return super().convert(value, param, ctx)
         except Exception:
             raise
 
@@ -48,12 +51,12 @@ def validate_entry_point(ctx, param, value):
             )
         if not re.match(MODULE_REGEX, module_name):
             raise click.BadParameter(
-                "Bad module name ({0})".format(module_name),
+                f"Bad module name ({module_name})",
                 param_hint="module_name:ClassName",
             )
         if not re.match(CLASS_REGEX, class_name):
             raise click.BadParameter(
-                "Bad class name ({0})".format(class_name),
+                f"Bad class name ({class_name})",
                 param_hint="module_name:ClassName",
             )
     return value
@@ -122,9 +125,9 @@ def query(metadata, var, all):
         try:
             value = _query(metadata, name)
         except MissingSectionError as err:
-            errors[name] = "{0}: Missing section".format(err.name)
+            errors[name] = f"{err.name}: Missing section"
         except MissingValueError as err:
-            errors[name] = "{0}: Missing value".format(err.name)
+            errors[name] = f"{err.name}: Missing value"
         else:
             values[name] = value
 

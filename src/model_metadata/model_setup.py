@@ -1,13 +1,14 @@
 #! /usr/bin/env python
+from __future__ import annotations
+
 import errno
 import os
 import shutil
 
 from binaryornot.check import is_binary
-
-from .find import find_model_data_files
-from .model_data_files import FileTemplate
-from .scripting import as_cwd
+from model_metadata.find import find_model_data_files
+from model_metadata.model_data_files import FileTemplate
+from model_metadata.scripting import as_cwd
 
 TEXT_CHARACTERS = "".join(list(map(chr, range(32, 127))) + list("\n\r\t\b"))
 
@@ -74,7 +75,7 @@ def mkdir_p(path):
             raise
 
 
-class OldFileSystemLoader(object):
+class OldFileSystemLoader:
     def __init__(self, searchpath):
         self._base = os.path.abspath(searchpath)
         self._files = find_model_data_files(self._base)
@@ -120,7 +121,7 @@ class OldFileSystemLoader(object):
         return staged_file
 
 
-class FileSystemLoader(object):
+class FileSystemLoader:
     def __init__(self, searchpath):
         self._base = os.path.abspath(searchpath)
 

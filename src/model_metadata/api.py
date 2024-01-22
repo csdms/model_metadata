@@ -1,8 +1,12 @@
+from __future__ import annotations
+
 import os
 
-from .model_setup import FileSystemLoader, OldFileSystemLoader
-from .modelmetadata import ModelMetadata
-from .scripting import cp, ln_s
+from model_metadata.model_setup import FileSystemLoader
+from model_metadata.model_setup import OldFileSystemLoader
+from model_metadata.modelmetadata import ModelMetadata
+from model_metadata.scripting import cp
+from model_metadata.scripting import ln_s
 
 
 def find(model):
@@ -63,7 +67,7 @@ def stage(model, dest=".", old_style_templates=False):
     dest : str
         Path to a folder within which to stage the model.
     """
-    defaults = dict()
+    defaults = {}
     mmd = ModelMetadata.find(model)
     meta = ModelMetadata(mmd)
     for param, item in meta.parameters.items():
