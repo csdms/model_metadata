@@ -50,6 +50,17 @@ documentation = "https://github.com/csdms/model_metadata"
 homepage = "https://github.com/csdms/model_metadata"
 repository = "https://github.com/csdms/model_metadata"
 
+[project.optional-dependencies]
+dev = [
+    "nox",
+]
+testing = [
+	"coveralls",
+    "pytest",
+    "pytest-cov",
+    "pytest-datadir",
+]
+
 [build-system]
 requires = [
     "setuptools >=61",
