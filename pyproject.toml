@@ -27,7 +27,7 @@ classifiers = [
 dependencies = [
     "binaryornot",
     "click",
-    "importlib-resources; python-version<'3.12'",
+    "importlib-resources; python_version<'3.12'",
     "jinja2",
     "packaging",
     "pyyaml",
