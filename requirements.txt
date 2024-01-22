@@ -1,5 +1,6 @@
 binaryornot
 click
+importlib_resources
 jinja2
 packaging
 pyyaml

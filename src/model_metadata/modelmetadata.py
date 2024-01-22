@@ -7,6 +7,7 @@ import os
 import pathlib
 import sys
 import warnings
+import importlib_resources
 
 import yaml
 from model_metadata.errors import MetadataNotFoundError
@@ -128,7 +129,7 @@ class ModelMetadata:
                 return model.__class__.__name__
 
         if hasattr(model, "METADATA"):
-            path_to_module = importlib.resources.files(_model_module(model))
+            path_to_module = importlib_resources.files(_model_module(model))
 
             try:
                 path_to_metadata = pathlib.Path(model.METADATA)
