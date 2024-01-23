@@ -5,7 +5,7 @@ import pathlib
 
 import pytest
 from click.testing import CliRunner
-from model_metadata.cli.main import mmd
+from model_metadata.main import mmd
 
 # import os
 

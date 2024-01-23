@@ -5,6 +5,8 @@ import importlib
 import os
 import re
 import sys
+from collections.abc import Iterable
+from typing import Any
 
 import click
 from model_metadata.api import find as _find
@@ -19,7 +21,9 @@ from model_metadata.modelmetadata import ModelMetadata
 class MetadataLocationParamType(click.Path):
     name = "metadata"
 
-    def convert(self, value, param, ctx):
+    def convert(
+        self, value: Any, param: click.Parameter | None, ctx: click.Context | None
+    ) -> Any:
         try:
             validate_entry_point(ctx, param, value)
         except (ValueError, click.BadParameter):
@@ -33,21 +37,20 @@ class MetadataLocationParamType(click.Path):
 
         return super().convert(value, param, ctx)
 
-        try:
-            return super().convert(value, param, ctx)
-        except Exception:
-            raise
 
-
-def validate_entry_point(ctx, param, value):
+def validate_entry_point(
+    ctx: click.Context | None,
+    param: click.Parameter | None,
+    value: str | None,
+) -> str | None:
     MODULE_REGEX = r"^(?!.*\.\.)(?!.*\.$)[A-Za-z][\w\.]*$"
     CLASS_REGEX = r"^[_a-zA-Z][_a-zA-Z0-9]+$"
     if value is not None:
         try:
-            module_name, class_name = value.split(":")
+            module_name, class_name = str(value).split(":")
         except ValueError:
             raise click.BadParameter(
-                "Bad entry point", param=value, param_hint="module_name:ClassName"
+                "Bad entry point", param=param, param_hint="module_name:ClassName"
             )
         if not re.match(MODULE_REGEX, module_name):
             raise click.BadParameter(
@@ -62,7 +65,7 @@ def validate_entry_point(ctx, param, value):
     return value
 
 
-def load_component(entry_point):
+def load_component(entry_point: str) -> type[Any]:
     if "" not in sys.path:
         sys.path.append("")
 
@@ -84,7 +87,7 @@ def load_component(entry_point):
 
 @click.group()
 @click.version_option()
-def mmd():
+def mmd() -> None:
     pass
 
 
@@ -95,7 +98,7 @@ def mmd():
         exists=True, file_okay=False, dir_okay=True, writable=False, resolve_path=True
     ),
 )
-def find(metadata):
+def find(metadata: str) -> None:
     sys.path.append("")
     try:
         click.secho(str(_find(metadata)), err=False)
@@ -114,9 +117,9 @@ def find(metadata):
 )
 @click.option("--var", multiple=True, help="name of variable or section")
 @click.option("--all", is_flag=True, help="query all sections")
-def query(metadata, var, all):
+def query(metadata: str, var: Iterable[str], all: bool) -> None:
     if all:
-        vars = ModelMetadata.SECTIONS
+        vars: Iterable[str] = ModelMetadata.SECTIONS
     else:
         vars = var
 
@@ -160,11 +163,11 @@ def query(metadata, var, all):
     help="supress printing the manifest to the screen",
 )
 @click.option("--old-style-templates", is_flag=True, help="use old-style templates")
-def stage(metadata, dest, quiet, old_style_templates):
+def stage(metadata: str, dest: str, quiet: bool, old_style_templates: bool) -> None:
     try:
         manifest = _stage(metadata, dest=dest, old_style_templates=old_style_templates)
     except MetadataNotFoundError as err:
-        click.secho(err, err=True)
+        click.secho(str(err), err=True)
         sys.exit(1)
 
     if not quiet:

@@ -41,10 +41,10 @@ dynamic = [
 text = "MIT"
 
 [project.scripts]
-mmd = "model_metadata.cli.main:mmd"
+mmd = "model_metadata.main:mmd"
 
 [project.entry-points."bmi.plugins"]
-bmi_mmd = "model_metadata.cli.main:configure_parser_mmd"
+bmi_mmd = "model_metadata.main:configure_parser_mmd"
 
 [project.urls]
 documentation = "https://github.com/csdms/model_metadata"
