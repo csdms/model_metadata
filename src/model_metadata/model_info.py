@@ -1,9 +1,12 @@
 #! /usr/bin/env python
 from __future__ import annotations
 
+import inspect
 import re
 import warnings
+from collections.abc import Iterable
 from pprint import pformat
+from typing import Any
 
 import yaml
 from model_metadata.load import load_meta_section
@@ -21,7 +24,7 @@ URL_REGEX = (
 DOI_REGEX = r'\b(10[.][0-9]{4,}(?:[.][0-9]+)*/(?:(?!["&\'<>])\S)+)\b'
 
 
-def norm_authors(authors):
+def norm_authors(authors: str | Iterable[str]) -> tuple[str, ...]:
     """Normalize a list of author names.
 
     Parameters
@@ -39,13 +42,13 @@ def norm_authors(authors):
     >>> from model_metadata.model_info import norm_authors
 
     >>> norm_authors('Cleese, John')
-    ['John Cleese']
+    ('John Cleese',)
 
     >>> norm_authors('John Cleese and Gilliam, Terry')
-    ['John Cleese', 'Terry Gilliam']
+    ('John Cleese', 'Terry Gilliam')
 
     >>> norm_authors(['John Cleese', 'Terry Gilliam', 'Idle, Eric'])
-    ['John Cleese', 'Terry Gilliam', 'Eric Idle']
+    ('John Cleese', 'Terry Gilliam', 'Eric Idle')
     """
     if isinstance(authors, str):
         authors = authors.split(" and ")
@@ -61,10 +64,10 @@ def norm_authors(authors):
         finally:
             normed.append(author)
 
-    return normed
+    return tuple(normed)
 
 
-def validate_email(email):
+def validate_email(email: str) -> str:
     """Validate an email address string.
 
     Parameters
@@ -98,21 +101,21 @@ def validate_email(email):
     return email
 
 
-def validate_url(url):
+def validate_url(url: str) -> str:
     """Validate a URL string."""
     if not re.match(URL_REGEX, url):
         raise ValueError(f"{url}: invalid URL")
     return url
 
 
-def validate_doi(doi):
+def validate_doi(doi: str) -> str:
     """Validate a DOI string."""
     if not re.match(DOI_REGEX, doi):
         raise ValueError(f"{doi}: invalid DOI")
     return doi
 
 
-def validate_version(version):
+def validate_version(version: str) -> str:
     """Validate a version string."""
     try:
         Version(version)
@@ -121,22 +124,16 @@ def validate_version(version):
     return version
 
 
-def validate_is_str(s):
+def validate_is_str(s: Any) -> str:
     if isinstance(s, str):
         return s
     else:
         raise TypeError("not a string")
 
 
-def object_properties(obj):
-    import inspect
-
+def object_properties(obj: ModelInfo) -> tuple[tuple[str, Any], ...]:
     properties = inspect.getmembers(obj.__class__, lambda o: isinstance(o, property))
-
-    props = []
-    for name, _ in properties:
-        props.append((name, getattr(obj, name)))
-    return props
+    return tuple((name, getattr(obj, name)) for name, _ in properties)
 
 
 class ModelInfo:
@@ -145,25 +142,28 @@ class ModelInfo:
 
     def __init__(
         self,
-        name,
-        author=None,
-        email=None,
-        version=None,
-        license=None,
-        doi=None,
-        url=None,
-        summary=None,
-        cite_as=None,
+        name: str,
+        author: str | None = None,
+        email: str | None = None,
+        version: str | None = None,
+        license: str | None = None,
+        doi: str | None = None,
+        url: str | None = None,
+        summary: str | None = None,
+        cite_as: str | Iterable[str] | None = None,
     ):
         if isinstance(cite_as, str):
-            cite_as = [cite_as]
+            self._cite_as: tuple[str, ...] | tuple[()] = (cite_as,)
+        elif cite_as is None:
+            self._cite_as = ()
+        else:
+            self._cite_as = tuple(cite_as)
 
         self._name = name
 
         version = str(version)
 
         self._authors = author and tuple(norm_authors(author)) or ()
-        self._cite_as = cite_as and tuple(cite_as) or ()
         self._email = email and validate_email(email) or None
         self._doi = doi and validate_doi(doi) or None
         self._url = url and validate_url(url) or None
@@ -172,67 +172,64 @@ class ModelInfo:
         self._summary = summary and validate_is_str(summary) or None
 
     @property
-    def name(self):
+    def name(self) -> str:
         return self._name
 
     @property
-    def authors(self):
+    def authors(self) -> tuple[str, ...]:
         return self._authors
 
     @property
-    def cite_as(self):
+    def cite_as(self) -> tuple[str, ...]:
         return self._cite_as
 
     @property
-    def email(self):
+    def email(self) -> str | None:
         return self._email
 
     @property
-    def version(self):
+    def version(self) -> str | None:
         return self._version
 
     @property
-    def license(self):
+    def license(self) -> str | None:
         return self._license
 
     @property
-    def doi(self):
+    def doi(self) -> str | None:
         return self._doi
 
     @property
-    def url(self):
+    def url(self) -> str | None:
         return self._url
 
     @property
-    def summary(self):
+    def summary(self) -> str | None:
         return self._summary
 
-    def as_dict(self):
+    def as_dict(self) -> dict[str, Any]:
         return dict(object_properties(self))
 
     @classmethod
-    def from_dict(cls, params):
-        name = params.pop("name", "?")
-        return cls(name, **params)
+    def from_dict(cls, params: dict[str, Any]) -> ModelInfo:
+        return cls(params.pop("name", "?"), **params)
 
     @classmethod
-    def from_path(cls, path):
-        params = load_meta_section(path, "info")
-        return cls.from_dict(params)
+    def from_path(cls, path: str) -> ModelInfo:
+        return cls.from_dict(load_meta_section(path, "info"))
 
     @staticmethod
-    def norm(params):
+    def norm(params: dict[str, Any]) -> dict[str, Any]:
         for key in ("initialize_args", "class", "id"):
             if params.pop(key, None):
                 warnings.warn(f"ignoring '{key}' in info section", stacklevel=2)
-        name = params.pop("name", "?")
-        return ModelInfo(name, **params).as_dict()
+        return ModelInfo(params.pop("name", "?"), **params).as_dict()
 
-    def to_yaml(self):
+    def to_yaml(self) -> str:
         d = self.as_dict()
-        d["authors"] = list(d.get("authors", []))
-        d["cite_as"] = list(d.get("cite_as", []))
+        d["authors"] = d.get("authors", ())
+        d["cite_as"] = d.get("cite_as", ())
         return yaml.safe_dump(d, default_flow_style=False)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return pformat(object_properties(self))

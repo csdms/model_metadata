@@ -9,7 +9,7 @@ from model_metadata.scripting import cp
 from model_metadata.scripting import ln_s
 
 
-def find(model):
+def find(model: str | type) -> str:
     """Attempt to find a model's metadata.
 
     Parameters
@@ -32,7 +32,7 @@ def find(model):
     return ModelMetadata.find(model)
 
 
-def query(model, var):
+def query(model: str, var: str) -> ModelMetadata:
     """Query metadata for a particular variable (or section).
 
     Parameters
@@ -55,7 +55,9 @@ def query(model, var):
     return ModelMetadata(path_to_metadata).get(var)
 
 
-def stage(model, dest=".", old_style_templates=False):
+def stage(
+    model: str, dest: str = ".", old_style_templates: bool = False
+) -> tuple[str, ...]:
     """Stage a model by setting up its input files.
 
     Parameters
@@ -81,16 +83,23 @@ def stage(model, dest=".", old_style_templates=False):
     return manifest
 
 
-def install(path, dest, develop=False, silent=True, dry_run=False, clobber=False):
+def install(
+    path: str,
+    dest: str,
+    develop: bool = False,
+    silent: bool = True,
+    dry_run: bool = False,
+    clobber: bool = False,
+) -> None:
     from jinja2 import Environment, FileSystemLoader
 
     templates = Environment(loader=FileSystemLoader(path)).list_templates()
     for fname in templates:
         if develop:
-            install = ln_s
+            _install = ln_s
         else:
-            install = cp
-        install(
+            _install = cp
+        _install(
             os.path.join(path, fname),
             os.path.join(dest, fname),
             silent=silent,

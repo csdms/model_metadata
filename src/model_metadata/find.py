@@ -6,21 +6,23 @@ import os
 from model_metadata.errors import MetadataNotFoundError
 from model_metadata.scripting import as_cwd
 
-_METADATA_FILES = {
-    "api.yaml",
-    "api.yml",
-    "parameters.yaml",
-    "parameters.yml",
-    "info.yaml",
-    "info.yml",
-    "wmt.yaml",
-    "wmt.yml",
-    "run.yaml",
-    "run.yml",
-}
+_METADATA_FILES = frozenset(
+    (
+        "api.yaml",
+        "api.yml",
+        "parameters.yaml",
+        "parameters.yml",
+        "info.yaml",
+        "info.yml",
+        "wmt.yaml",
+        "wmt.yml",
+        "run.yaml",
+        "run.yml",
+    )
+)
 
 
-def is_metadata_file(fname):
+def is_metadata_file(fname: str) -> bool:
     """Check if a file is a model metadat file.
 
     Parameters
@@ -36,7 +38,7 @@ def is_metadata_file(fname):
     return os.path.basename(fname) in _METADATA_FILES
 
 
-def find_metadata_files(datadir):
+def find_metadata_files(datadir: str) -> tuple[str, ...]:
     """Find all model metadata files.
 
     Parameters
@@ -58,10 +60,10 @@ def find_metadata_files(datadir):
         else:
             raise
 
-    return [os.path.join(datadir, fname) for fname in found]
+    return tuple(os.path.join(datadir, fname) for fname in found)
 
 
-def find_model_data_files(datadir):
+def find_model_data_files(datadir: str) -> tuple[str, ...]:
     """Look for model data files.
 
     Parameters
@@ -76,11 +78,11 @@ def find_model_data_files(datadir):
     """
     fnames = []
     for root, dirs, files in os.walk(datadir):
-        for dir in dirs:
-            fnames.append(os.path.normpath(os.path.join(root, dir)) + os.sep)
+        for dir_ in dirs:
+            fnames.append(os.path.normpath(os.path.join(root, dir_)) + os.sep)
 
         for fname in files:
             if not is_metadata_file(fname):
                 fnames.append(os.path.normpath(os.path.join(root, fname)))
 
-    return fnames
+    return tuple(fnames)

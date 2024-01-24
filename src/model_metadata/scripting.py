@@ -5,31 +5,29 @@ import errno
 import os
 import shutil
 import sys
+from collections.abc import Generator
 
 
 @contextlib.contextmanager
-def as_cwd(path, create=True):
+def as_cwd(path: str, create: bool = True) -> Generator[None, None, None]:
     prev_cwd = os.getcwd()
 
     if create:
-        mkdir_p(path)
+        os.makedirs(os.path.realpath(path), exist_ok=True)
     os.chdir(path)
 
     yield
     os.chdir(prev_cwd)
 
 
-def mkdir_p(path):
-    try:
-        os.makedirs(path)
-    except OSError as exc:
-        if exc.errno == errno.EEXIST and os.path.isdir(path):
-            pass
-        else:
-            raise
-
-
-def cp(source, dest, dry_run=False, clobber=True, create_dirs=False, silent=False):
+def cp(
+    source: str,
+    dest: str,
+    dry_run: bool = False,
+    clobber: bool = True,
+    create_dirs: bool = False,
+    silent: bool = False,
+) -> None:
     """Copy file from source to destination.
 
     Parameters
@@ -66,7 +64,14 @@ def cp(source, dest, dry_run=False, clobber=True, create_dirs=False, silent=Fals
         shutil.copy2(*cp_args)
 
 
-def ln_s(source, dest, dry_run=False, clobber=True, create_dirs=False, silent=False):
+def ln_s(
+    source: str,
+    dest: str,
+    dry_run: bool = False,
+    clobber: bool = True,
+    create_dirs: bool = False,
+    silent: bool = False,
+) -> None:
     """Link file from source to destination.
 
     Parameters
@@ -91,7 +96,6 @@ def ln_s(source, dest, dry_run=False, clobber=True, create_dirs=False, silent=Fa
 
     if not silent or dry_run:
         print(f"ln -s {source} {dest}", file=sys.stderr)
-        # status("ln -s {0} {1}".format(*ln_args))
 
     if not dry_run:
         if os.path.isfile(dest):
