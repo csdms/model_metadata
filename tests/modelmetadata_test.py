@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import pathlib
 import sys
 
@@ -27,19 +28,19 @@ class BarBaz:
     ),
 )
 def test_search_paths(model):
-    assert ModelMetadata.search_paths(model) == [
-        pathlib.Path("FooBar"),
-        pathlib.Path(sys.prefix) / "share" / "csdms" / "FooBar",
-    ]
+    assert ModelMetadata.search_paths(model) == (
+        "FooBar",
+        os.path.join(sys.prefix, "share", "csdms", "FooBar")
+    )
 
 
 @pytest.mark.parametrize("model", (f"{__name__}:BarBaz", BarBaz, BarBaz()))
 def test_search_paths_with_metadata(model):
-    assert ModelMetadata.search_paths(model) == [
-        pathlib.Path(__file__).parent / "FooBar",
-        pathlib.Path("BarBaz"),
-        pathlib.Path(sys.prefix) / "share" / "csdms" / "BarBaz",
-    ]
+    assert ModelMetadata.search_paths(model) == (
+        os.path.join(os.path.dirname(__file__), "FooBar"),
+        "BarBaz",
+        os.path.join(sys.prefix, "share", "csdms", "BarBaz")
+    )
 
 
 def test_model_metadata_from_path(shared_datadir):
