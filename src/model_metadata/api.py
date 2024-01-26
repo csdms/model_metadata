@@ -5,8 +5,6 @@ import os
 from model_metadata.model_setup import FileSystemLoader
 from model_metadata.model_setup import OldFileSystemLoader
 from model_metadata.modelmetadata import ModelMetadata
-from model_metadata.scripting import cp
-from model_metadata.scripting import ln_s
 
 
 def find(model: str | type) -> str:
@@ -81,29 +79,3 @@ def stage(
         manifest = FileSystemLoader(mmd).stage_all(dest, **defaults)
 
     return manifest
-
-
-def install(
-    path: str,
-    dest: str,
-    develop: bool = False,
-    silent: bool = True,
-    dry_run: bool = False,
-    clobber: bool = False,
-) -> None:
-    from jinja2 import Environment, FileSystemLoader
-
-    templates = Environment(loader=FileSystemLoader(path)).list_templates()
-    for fname in templates:
-        if develop:
-            _install = ln_s
-        else:
-            _install = cp
-        _install(
-            os.path.join(path, fname),
-            os.path.join(dest, fname),
-            silent=silent,
-            dry_run=dry_run,
-            create_dirs=True,
-            clobber=clobber,
-        )
