@@ -1,8 +1,10 @@
 #! /usr/bin/env python
 from __future__ import annotations
 
+import contextlib
 import os
 import shutil
+from collections.abc import Generator
 from typing import Any
 
 from binaryornot.check import is_binary
@@ -11,7 +13,6 @@ from jinja2 import FileSystemLoader as _FileSystemLoader
 from model_metadata.find import find_model_data_files
 from model_metadata.find import is_metadata_file
 from model_metadata.model_data_files import FileTemplate
-from model_metadata.scripting import as_cwd
 
 
 class OldFileSystemLoader:
@@ -67,11 +68,22 @@ class FileSystemLoader:
         manifest = env.list_templates(filter_func=lambda f: not is_metadata_file(f))
         with as_cwd(destdir):
             for fname in manifest:
-                with as_cwd(os.path.dirname(fname) or ".", create=True):
-                    pass
+                os.makedirs(os.path.dirname(fname) or ".", exist_ok=True)
                 if not is_binary(os.path.join(self._base, fname)):
                     with open(fname, "w") as fp:
                         fp.write(env.get_template(fname).render(**defaults))
                 else:
                     shutil.copy2(os.path.join(self._base, fname), fname)
         return tuple(manifest)
+
+
+@contextlib.contextmanager
+def as_cwd(path: str, create: bool = True) -> Generator[None, None, None]:
+    prev_cwd = os.getcwd()
+
+    if create:
+        os.makedirs(os.path.realpath(path), exist_ok=True)
+    os.chdir(path)
+
+    yield
+    os.chdir(prev_cwd)

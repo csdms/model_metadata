@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import os
-
 from model_metadata.model_setup import FileSystemLoader
 from model_metadata.model_setup import OldFileSystemLoader
 from model_metadata.modelmetadata import ModelMetadata

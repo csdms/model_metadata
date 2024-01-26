@@ -2,9 +2,9 @@
 from __future__ import annotations
 
 import contextlib
-import warnings
 import re
 import sys
+import warnings
 from collections import OrderedDict
 from collections.abc import Sequence
 from typing import Any
@@ -269,7 +269,7 @@ class StringParameter(ModelParameter):
         if kwds:
             warnings.warn(
                 f"ignoring unrecognized keywords ({', '.join(repr(k) for k in kwds)})",
-                stacklevel=2
+                stacklevel=2,
             )
         super().__init__(str(value), desc=desc)
 

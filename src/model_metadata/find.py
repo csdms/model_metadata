@@ -4,7 +4,6 @@ from __future__ import annotations
 import os
 
 from model_metadata.errors import MetadataNotFoundError
-from model_metadata.scripting import as_cwd
 
 _METADATA_FILES = frozenset(
     (
@@ -51,16 +50,15 @@ def find_metadata_files(datadir: str) -> tuple[str, ...]:
     list of str
         Paths to all metadata files.
     """
-    try:
-        with as_cwd(datadir, create=False):
-            found = [fname for fname in _METADATA_FILES if os.path.isfile(fname)]
-    except OSError as err:
-        if err.errno == 2:
-            raise MetadataNotFoundError(datadir)
-        else:
-            raise
-
-    return tuple(os.path.join(datadir, fname) for fname in found)
+    found = tuple(
+        path_to_file
+        for fname in _METADATA_FILES
+        if os.path.isfile(path_to_file := os.path.join(datadir, fname))
+    )
+    if not found:
+        raise MetadataNotFoundError(datadir)
+    else:
+        return found
 
 
 def find_model_data_files(datadir: str) -> tuple[str, ...]:

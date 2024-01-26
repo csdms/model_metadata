@@ -9,8 +9,6 @@ from collections.abc import Mapping
 from collections.abc import Sequence
 from typing import Any
 
-from model_metadata.scripting import as_cwd
-
 
 class SafeFormatter(string.Formatter):
     def get_field(
@@ -110,12 +108,11 @@ def format_template_file(src: str, dest: str, **kwds: dict[str, Any]) -> None:
     if ext == ".tmpl":
         dest = base
 
-    with as_cwd(srcdir):
-        with open(fname) as fp:
-            template = fp.read()
+    with open(src) as fp:
+        template = fp.read()
 
-        with open(dest, "w") as fp:
-            fp.write(sub_parameters(template, **kwds))
+    with open(dest, "w") as fp:
+        fp.write(sub_parameters(template, **kwds))
 
 
 def sub_parameters(string: str, **kwds: dict[str, Any]) -> str:
