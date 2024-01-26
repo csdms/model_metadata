@@ -186,7 +186,7 @@ def infer_type(value: float | str) -> str:
         raise ValueError("unable to infer data type")
 
 
-def parameter_from_dict(d: dict[str, Any]) -> ModelParameterMixIn:
+def parameter_from_dict(d: dict[str, Any]) -> ModelParameter:
     kwds: dict[str, Any] = {"desc": d.get("description") or d.get("desc")}
 
     value = d["value"]
@@ -223,7 +223,7 @@ def parameter_from_dict(d: dict[str, Any]) -> ModelParameterMixIn:
         raise ValueError(f"{dtype}: unknown parameter type")
 
 
-class ModelParameterMixIn:
+class ModelParameter:
     _kwds: tuple[str, ...] | tuple[()] = ()
     _dtype: str
 
@@ -262,7 +262,7 @@ class ModelParameterMixIn:
         return f"{self.__class__.__name__}({', '.join(args)}) "
 
 
-class StringParameter(ModelParameterMixIn):
+class StringParameter(ModelParameter):
     _dtype = "str"
 
     def __init__(self, value: str, desc: str | None = None, **kwds: dict[str, Any]):
@@ -274,7 +274,7 @@ class StringParameter(ModelParameterMixIn):
         super().__init__(str(value), desc=desc)
 
 
-class NumberParameter(ModelParameterMixIn):
+class NumberParameter(ModelParameter):
     _kwds = ("units", "range")
     _value: int | float
 
@@ -331,7 +331,7 @@ class NumberParameter(ModelParameterMixIn):
         return self._range
 
 
-class ChoiceParameter(ModelParameterMixIn):
+class ChoiceParameter(ModelParameter):
     _dtype = "str"
     _kwds: tuple[str, ...] = ("choices",)
     _choices: tuple[Any, ...]
