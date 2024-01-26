@@ -25,8 +25,8 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Physics",
 ]
 dependencies = [
-    "binaryornot",
     "click",
+    "identify",
     "importlib-resources; python_version<'3.12'",
     "jinja2",
     "packaging",

@@ -1,5 +1,5 @@
-binaryornot
 click
+identify
 importlib_resources; python_version<"3.12"
 jinja2
 packaging

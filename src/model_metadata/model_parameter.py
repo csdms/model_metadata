@@ -268,7 +268,8 @@ class StringParameter(ModelParameter):
     def __init__(self, value: str, desc: str | None = None, **kwds: dict[str, Any]):
         if kwds:
             warnings.warn(
-                f"ignoring unrecognized keywords ({', '.join(repr(k) for k in kwds)})",
+                f"ignoring unrecognized keywords for {self.__class__.__name__}"
+                f" ({', '.join(repr(k) for k in kwds)})",
                 stacklevel=2,
             )
         super().__init__(str(value), desc=desc)

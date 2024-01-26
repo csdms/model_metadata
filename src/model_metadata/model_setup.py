@@ -7,7 +7,7 @@ import shutil
 from collections.abc import Generator
 from typing import Any
 
-from binaryornot.check import is_binary
+from identify import identify
 from jinja2 import Environment
 from jinja2 import FileSystemLoader as _FileSystemLoader
 from model_metadata.find import find_model_data_files
@@ -31,9 +31,9 @@ class OldFileSystemLoader:
     def stage_all(self, destdir: str, **kwds: dict[str, Any]) -> tuple[str, ...]:
         sources = (os.path.relpath(fn, self.base) for fn in self.sources)
         with as_cwd(destdir, create=True):
-            manifest = [
+            manifest = (
                 p for src in sources if (p := self.stage(src, **kwds)) is not None
-            ]
+            )
         return tuple(manifest)
 
     def stage(self, relpath: str, **kwds: dict[str, Any]) -> str | None:
@@ -51,11 +51,11 @@ class OldFileSystemLoader:
         if os.path.isdir(src):
             os.makedirs(os.path.realpath(relpath), exist_ok=True)
             staged_file = None
-        elif is_binary(src):
+        elif identify.file_is_text(src):
+            staged_file = FileTemplate(src).to_file(relpath, **kwds)
+        else:
             shutil.copy2(src, relpath)
             staged_file = relpath
-        else:
-            staged_file = FileTemplate(src).to_file(relpath, **kwds)
         return staged_file
 
 
@@ -66,14 +66,19 @@ class FileSystemLoader:
     def stage_all(self, destdir: str, **defaults: dict[str, Any]) -> tuple[str, ...]:
         env = Environment(loader=_FileSystemLoader(self._base))
         manifest = env.list_templates(filter_func=lambda f: not is_metadata_file(f))
-        with as_cwd(destdir):
-            for fname in manifest:
-                os.makedirs(os.path.dirname(fname) or ".", exist_ok=True)
-                if not is_binary(os.path.join(self._base, fname)):
-                    with open(fname, "w") as fp:
-                        fp.write(env.get_template(fname).render(**defaults))
-                else:
-                    shutil.copy2(os.path.join(self._base, fname), fname)
+
+        os.makedirs(destdir, exist_ok=True)
+        for fname in manifest:
+            src_file = os.path.join(self._base, fname)
+            dst_file = os.path.join(destdir, fname)
+
+            os.makedirs(os.path.dirname(dst_file), exist_ok=True)
+            if identify.file_is_text(src_file):
+                with open(dst_file, "w") as fp:
+                    fp.write(env.get_template(fname).render(**defaults))
+            else:
+                shutil.copy2(src_file, dst_file)
+
         return tuple(manifest)
 
 
