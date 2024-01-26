@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import contextlib
+import warnings
 import re
 import sys
 from collections import OrderedDict
@@ -264,7 +265,12 @@ class ModelParameterMixIn:
 class StringParameter(ModelParameterMixIn):
     _dtype = "str"
 
-    def __init__(self, value: str, desc: str | None = None):
+    def __init__(self, value: str, desc: str | None = None, **kwds: dict[str, Any]):
+        if kwds:
+            warnings.warn(
+                f"ignoring unrecognized keywords ({', '.join(repr(k) for k in kwds)})",
+                stacklevel=2
+            )
         super().__init__(str(value), desc=desc)
 
 
