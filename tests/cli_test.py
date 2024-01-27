@@ -37,23 +37,23 @@ def test_stage_subcommand(capsys, tmpdir, shared_datadir):
 
     with tmpdir.as_cwd():
         with contextlib.suppress(SystemExit):
-            assert main(["stage", str(shared_datadir), str(stagedir)]) == 0
+            assert main(["stage", "-vvv", str(shared_datadir), str(stagedir)]) == 0
         manifest = capsys.readouterr().out.splitlines()
         assert set(stagedir.iterdir()) == {stagedir / fname for fname in manifest}
 
 
 def test_query_subcommand(capsys, shared_datadir):
     with contextlib.suppress(SystemExit):
-        assert main(["query", "--var=info.version", str(shared_datadir)]) == 0
+        assert main(["query", "-vvv", "--var=info.version", str(shared_datadir)]) == 0
     assert capsys.readouterr().out.strip() == "info.version: '10.6'"
 
 
 def test_query_subcommand_missing_values(capsys, shared_datadir):
     with contextlib.suppress(SystemExit):
-        assert main(["query", "--var=not-a-section"]) == 1
+        assert main(["query", "-vvv", "--var=not-a-section"]) == 1
 
     with contextlib.suppress(SystemExit):
-        assert main(["query", "--var=not-a-section", "--var=foobar"]) == 2
+        assert main(["query", "-vvv", "--var=not-a-section", "--var=foobar"]) == 2
 
 
 @pytest.mark.parametrize(
@@ -61,12 +61,12 @@ def test_query_subcommand_missing_values(capsys, shared_datadir):
 )
 def test_find(capsys, datadir, entry_point):
     with contextlib.suppress(SystemExit):
-        assert main(["find", entry_point]) == 0
+        assert main(["find", "-vvv", entry_point]) == 0
     assert os.path.isfile(os.path.join(capsys.readouterr().out.strip(), "model.py"))
 
 
 def test_find_absolute_path(capsys, datadir):
     with contextlib.suppress(SystemExit):
-        assert main(["find", "testing.model:ModelAbsolutePath"]) == 0
+        assert main(["find", "-vvv", "testing.model:ModelAbsolutePath"]) == 0
     actual = pathlib.PurePath(capsys.readouterr().out.strip())
     assert actual.stem == ""

@@ -28,11 +28,11 @@ def test(session: nox.Session) -> None:
 def test_cli(session: nox.Session) -> None:
     """Test the command line interface."""
     session.install(".")
-    session.run("mmd", "--help")
-    session.run("mmd", "--version")
-    session.run("mmd", "find", "--help")
-    session.run("mmd", "query", "--help")
-    session.run("mmd", "stage", "--help")
+    session.run("model-metadata", "--help")
+    session.run("model-metadata", "--version")
+    session.run("model-metadata", "find", "--help")
+    session.run("model-metadata", "query", "--help")
+    session.run("model-metadata", "stage", "--help")
 
 
 @nox.session
