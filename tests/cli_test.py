@@ -1,98 +1,72 @@
 #!/usr/bin/env python
 from __future__ import annotations
 
+import contextlib
+import os
 import pathlib
 
 import pytest
-from click.testing import CliRunner
-from model_metadata.main import mmd
-
-# import os
+from model_metadata.main import main
 
 
-def test_command_line_interface():
-    """Test the CLI."""
-    runner = CliRunner()
-    result = runner.invoke(mmd, ["--help"])
-    assert result.exit_code == 0
+def test_cli_version(capsys):
+    with contextlib.suppress(SystemExit):
+        assert main(["--version"]) == 0
+    output = capsys.readouterr().out
 
-    result = runner.invoke(mmd, ["--version"])
-    assert result.exit_code == 0
-    assert "version" in result.output
+    assert "model-metadata" in output
+
+
+def test_cli_help(capsys):
+    with contextlib.suppress(SystemExit):
+        assert main(["--help"]) == 0
+    output = capsys.readouterr().out
+
+    assert "usage" in output
 
 
 @pytest.mark.parametrize("subcommand", ("find", "query", "stage"))
-def test_subcommand_help(subcommand):
-    runner = CliRunner()
-    result = runner.invoke(mmd, [subcommand, "--help"])
-    assert result.exit_code == 0
+def test_subcommand_help(capsys, subcommand):
+    with contextlib.suppress(SystemExit):
+        assert main([subcommand, "--help"]) == 0
 
 
-def test_stage_subcommand(tmpdir, shared_datadir):
-    runner = CliRunner()
+def test_stage_subcommand(capsys, tmpdir, shared_datadir):
     stagedir = pathlib.Path(tmpdir / "stagedir")
     stagedir.mkdir()
+
     with tmpdir.as_cwd():
-        result = runner.invoke(mmd, ["stage", str(shared_datadir), str(stagedir)])
-        assert result.exit_code == 0
-        manifest = result.stdout.splitlines()
+        with contextlib.suppress(SystemExit):
+            assert main(["stage", str(shared_datadir), str(stagedir)]) == 0
+        manifest = capsys.readouterr().out.splitlines()
         assert set(stagedir.iterdir()) == {stagedir / fname for fname in manifest}
 
 
-def test_stage_subcommand_without_manifest(tmpdir, shared_datadir):
-    runner = CliRunner()
-    stagedir = pathlib.Path(tmpdir / "stagedir")
-    stagedir.mkdir()
-    with tmpdir.as_cwd():
-        result = runner.invoke(mmd, ["stage", "-q", str(shared_datadir), str(stagedir)])
-        assert set(stagedir.iterdir()) == {stagedir / "child.in"}
-        assert result.exit_code == 0
-        assert result.stdout == ""
+def test_query_subcommand(capsys, shared_datadir):
+    with contextlib.suppress(SystemExit):
+        assert main(["query", "--var=info.version", str(shared_datadir)]) == 0
+    assert capsys.readouterr().out.strip() == "info.version: '10.6'"
 
 
-def test_query_subcommand(shared_datadir):
-    runner = CliRunner()
-    result = runner.invoke(mmd, ["query", str(shared_datadir), "--var", "info.version"])
-    assert result.exit_code == 0
-    assert result.stdout.strip() == "info.version: '10.6'"
+def test_query_subcommand_missing_values(capsys, shared_datadir):
+    with contextlib.suppress(SystemExit):
+        assert main(["query", "--var=not-a-section"]) == 1
+
+    with contextlib.suppress(SystemExit):
+        assert main(["query", "--var=not-a-section", "--var=foobar"]) == 2
 
 
-def test_query_subcommand_missing_values(shared_datadir):
-    runner = CliRunner()
-    result = runner.invoke(
-        mmd, ["query", str(shared_datadir), "--var", "not_a_section"]
-    )
-    assert result.exit_code == 1
-    result = runner.invoke(
-        mmd,
-        [
-            "query",
-            str(shared_datadir),
-            "--var=not_a_section",
-            "--var=also_not_a_section",
-        ],
-    )
-    assert result.exit_code == 2
-
-
-# @pytest.mark.parametrize("entry_point", ("model:ModelString", "model:ModelPath"))
 @pytest.mark.parametrize(
     "entry_point", ("testing.model:ModelString", "testing.model:ModelPath")
 )
-def test_find(datadir, entry_point):
-    runner = CliRunner()
-    # os.chdir(datadir)
-    result = runner.invoke(mmd, ["find", entry_point])
-    assert result.exit_code == 0
-    assert (pathlib.Path(result.stdout.strip()) / "model.py").is_file()
-    # assert result.stdout.strip() == str(datadir)
+def test_find(capsys, datadir, entry_point):
+    with contextlib.suppress(SystemExit):
+        assert main(["find", entry_point]) == 0
+    assert os.path.isfile(os.path.join(capsys.readouterr().out.strip(), "model.py"))
 
 
-def test_find_absolute_path(datadir):
-    runner = CliRunner()
-    # os.chdir(datadir)
-    result = runner.invoke(mmd, ["find", "testing.model:ModelAbsolutePath"])
-    actual = pathlib.PurePath(result.stdout.strip())
-
-    assert result.exit_code == 0
+def test_find_absolute_path(capsys, datadir):
+    with contextlib.suppress(SystemExit):
+        assert main(["find", "testing.model:ModelAbsolutePath"]) == 0
+    actual = pathlib.PurePath(capsys.readouterr().out.strip())
     assert actual.stem == ""

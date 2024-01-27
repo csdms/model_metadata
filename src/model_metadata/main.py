@@ -1,14 +1,16 @@
 from __future__ import annotations
 
-import contextlib
+import argparse
 import importlib
+import keyword
 import os
-import re
 import sys
 from collections.abc import Iterable
+from collections.abc import Sequence
+from functools import partial
 from typing import Any
 
-import click
+from model_metadata._version import __version__
 from model_metadata.api import find as _find
 from model_metadata.api import query as _query
 from model_metadata.api import stage as _stage
@@ -18,115 +20,166 @@ from model_metadata.errors import MissingValueError
 from model_metadata.modelmetadata import ModelMetadata
 
 
-class MetadataLocationParamType(click.Path):
-    name = "metadata"
+out = partial(print, file=sys.stderr)
 
-    def convert(
-        self, value: Any, param: click.Parameter | None, ctx: click.Context | None
-    ) -> Any:
+
+class FatalError(RuntimeError):
+    def __init__(self, msg: str):
+        self._msg = str(msg)
+
+    def __str__(self) -> str:
+        return self._msg
+
+
+class ValidateEntryPoint(argparse.Action):
+    def __call__(
+        self,
+        parser: argparse.ArgumentParser,
+        namespace: argparse.Namespace,
+        values: str | Sequence[Any] | None,
+        option_string: str | None = None,
+    ) -> None:
+        if not isinstance(values, str):
+            parser.error(f"{values}: invalid entry-point: not a string")
+
+        entry_point = values
         try:
-            validate_entry_point(ctx, param, value)
-        except (ValueError, click.BadParameter):
-            model = value
+            module_name, class_name = validate_entry_point(entry_point)
+        except RuntimeError as error:
+            parser.error(f"{entry_point}: invalid entry-point: {str(error)}")
         else:
-            model = _find(load_component(value))
-
-        for p in ModelMetadata.search_paths(model):
-            with contextlib.suppress(Exception):
-                return super().convert(p, param, ctx)
-
-        return super().convert(value, param, ctx)
+            setattr(namespace, self.dest, (module_name, class_name))
 
 
-def validate_entry_point(
-    ctx: click.Context | None,
-    param: click.Parameter | None,
-    value: str | None,
-) -> str | None:
-    MODULE_REGEX = r"^(?!.*\.\.)(?!.*\.$)[A-Za-z][\w\.]*$"
-    CLASS_REGEX = r"^[_a-zA-Z][_a-zA-Z0-9]+$"
-    if value is not None:
-        try:
-            module_name, class_name = str(value).split(":")
-        except ValueError:
-            raise click.BadParameter(
-                "Bad entry point", param=param, param_hint="module_name:ClassName"
-            )
-        if not re.match(MODULE_REGEX, module_name):
-            raise click.BadParameter(
-                f"Bad module name ({module_name})",
-                param_hint="module_name:ClassName",
-            )
-        if not re.match(CLASS_REGEX, class_name):
-            raise click.BadParameter(
-                f"Bad class name ({class_name})",
-                param_hint="module_name:ClassName",
-            )
-    return value
+class ValidatePathExists(argparse.Action):
+    def __call__(
+        self,
+        parser: argparse.ArgumentParser,
+        namespace: argparse.Namespace,
+        values: str | Sequence[Any] | None,
+        option_string: str | None = None,
+    ) -> None:
+        if not isinstance(values, str):
+            parser.error(f"{values}: invalid path: not a string")
+
+        path = values
+
+        if not os.path.isdir(path):
+            parser.error(f"{path}: path does not exist")
+        else:
+            setattr(namespace, self.dest, path)
 
 
-def load_component(entry_point: str) -> type[Any]:
-    if "" not in sys.path:
-        sys.path.append("")
-
-    module_name, cls_name = entry_point.split(":")
-
-    component = None
+def validate_entry_point(value: str) -> tuple[str, str]:
     try:
-        module = importlib.import_module(module_name)
-    except ImportError:
-        raise
-    else:
-        try:
-            component = module.__dict__[cls_name]
-        except KeyError:
-            raise ImportError(cls_name)
+        module_name, class_name = str(value).split(":")
+    except ValueError:
+        raise RuntimeError("Bad entry point")
+
+    if keyword.iskeyword(module_name) or any(
+        not name.isidentifier() for name in module_name.split(".")
+    ):
+        raise RuntimeError(f"invalid module name ({module_name})")
+
+    if not class_name.isidentifier() or keyword.iskeyword(class_name):
+        raise RuntimeError(f"invalid class name ({class_name})")
+
+    return (module_name, class_name)
+
+
+def load_component(module_name: str, class_name: str) -> type[Any]:
+    module = importlib.import_module(module_name)
+    try:
+        component = getattr(module, class_name)
+    except AttributeError:
+        raise ImportError(
+            f"unable to import {class_name} from {module_name}", name=module_name
+        )
 
     return component
 
 
-@click.group()
-@click.version_option()
-def mmd() -> None:
-    pass
+def main(argv: tuple[str, ...] | None = None) -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--version", action="version", version=f"model-metadata {__version__}"
+    )
+    subparsers = parser.add_subparsers(dest="command")
 
+    def _add_cmd(name: str, *, help: str) -> argparse.ArgumentParser:
+        parser = subparsers.add_parser(name, help=help)
+        parser.add_argument(
+            "-v",
+            "--verbose",
+            action="count",
+            help="Also emit status messages to stderr.",
+        )
+        parser.add_argument(
+            "--silent", action="store_true", help="Suppress status status messages"
+        )
+        return parser
 
-@mmd.command()
-@click.argument(
-    "metadata",
-    type=MetadataLocationParamType(
-        exists=True, file_okay=False, dir_okay=True, writable=False, resolve_path=True
-    ),
-)
-def find(metadata: str) -> None:
-    sys.path.append("")
+    find_parser = _add_cmd("find", help="find the metadata for a model")
+    find_parser.add_argument("entry_point", action=ValidateEntryPoint)
+    find_parser.set_defaults(func=find)
+
+    query_parser = _add_cmd("query", help="print metadata about a model")
+    query_parser.add_argument("metadata", action=ValidatePathExists)
+    query_parser.set_defaults(func=query)
+    vars_group = query_parser.add_mutually_exclusive_group()
+    vars_group.add_argument("--var", nargs="*")
+    vars_group.add_argument("--all", action="store_true")
+
+    stage_parser = _add_cmd("stage", help="stage a model's input files")
+    stage_parser.add_argument("metadata", action=ValidatePathExists)
+    stage_parser.add_argument("dest")
+    stage_parser.set_defaults(func=stage)
+
+    args = parser.parse_args(argv)
     try:
-        click.secho(str(_find(metadata)), err=False)
-    except MetadataNotFoundError:
-        sys.exit(1)
-    else:
-        sys.exit(0)
+        return args.func(args)
+    except FatalError as err:
+        print(err, file=sys.stderr)
+        return 1
 
 
-@mmd.command()
-@click.argument(
-    "metadata",
-    type=MetadataLocationParamType(
-        exists=True, file_okay=False, dir_okay=True, writable=False, resolve_path=True
-    ),
-)
-@click.option("--var", multiple=True, help="name of variable or section")
-@click.option("--all", is_flag=True, help="query all sections")
-def query(metadata: str, var: Iterable[str], all: bool) -> None:
-    if all:
+def find(args: argparse.Namespace) -> int:
+    if args.verbose and not args.silent:
+        out(
+            f"attemting to import {args.entry_point[1]} from {args.entry_point[0]}",
+            file=sys.stderr,
+        )
+
+    try:
+        cls = load_component(*args.entry_point)
+    except ImportError as err:
+        raise FatalError(str(err))
+    except ModuleNotFoundError as err:
+        raise FatalError(str(err))
+
+    if args.verbose and not args.silent:
+        out(f"looking for metadata for {cls.__name__}")
+    try:
+        print(str(_find(cls)))
+    except MetadataNotFoundError as err:
+        FatalError(str(err))
+
+    return 0
+
+
+def query(args: argparse.Namespace) -> int:
+    if args.all:
         vars: Iterable[str] = ModelMetadata.SECTIONS
     else:
-        vars = var
+        vars = args.var or []
+
+    if not vars and not args.silent:
+        out("nothing to query")
 
     values, errors = {}, {}
     for name in vars:
         try:
-            value = _query(metadata, name)
+            value = _query(args.metadata, name)
         except MissingSectionError as err:
             errors[name] = f"{err.name}: Missing section"
         except MissingValueError as err:
@@ -134,42 +187,31 @@ def query(metadata: str, var: Iterable[str], all: bool) -> None:
         else:
             values[name] = value
 
-    if errors:
+    if errors and not args.silent:
         for error in errors.values():
-            click.secho(error, err=True, fg="red")
-    else:
-        click.echo_via_pager(ModelMetadata.format(values))
+            out(error)
+    if values:
+        print(ModelMetadata.format(values))
 
-    sys.exit(len(errors))
+    return len(errors)
 
 
-@mmd.command()
-@click.argument(
-    "metadata",
-    type=click.Path(
-        exists=True, file_okay=False, dir_okay=True, writable=False, resolve_path=True
-    ),
-)
-@click.argument(
-    "dest",
-    type=click.Path(
-        exists=True, file_okay=False, dir_okay=True, writable=True, resolve_path=True
-    ),
-)
-@click.option(
-    "-q",
-    "--quiet",
-    is_flag=True,
-    help="supress printing the manifest to the screen",
-)
-@click.option("--old-style-templates", is_flag=True, help="use old-style templates")
-def stage(metadata: str, dest: str, quiet: bool, old_style_templates: bool) -> None:
+def stage(args: argparse.Namespace) -> int:
     try:
-        manifest = _stage(metadata, dest=dest, old_style_templates=old_style_templates)
+        manifest = _stage(args.metadata, dest=args.dest)
     except MetadataNotFoundError as err:
-        click.secho(str(err), err=True)
-        sys.exit(1)
+        out(str(err))
+        return 1
 
-    if not quiet:
-        click.secho(os.linesep.join(manifest), err=False)
-    sys.exit(0)
+    if args.verbose and not args.silent:
+        out(f"staged files in: {os.path.realpath(args.dest)}")
+    if not manifest and not args.silent:
+        out("no files to stage")
+
+    print(os.linesep.join(manifest))
+
+    return 0
+
+
+if __name__ == "__main__":
+    SystemExit(main())

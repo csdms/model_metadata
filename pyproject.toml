@@ -25,7 +25,6 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Physics",
 ]
 dependencies = [
-    "click",
     "identify",
     "importlib-resources; python_version<'3.12'",
     "jinja2",
@@ -41,7 +40,8 @@ dynamic = [
 text = "MIT"
 
 [project.scripts]
-mmd = "model_metadata.main:mmd"
+mmd = "model_metadata.main:main"
+model-metadata = "model_metadata.main:main"
 
 [project.entry-points."bmi.plugins"]
 bmi_mmd = "model_metadata.main:configure_parser_mmd"
