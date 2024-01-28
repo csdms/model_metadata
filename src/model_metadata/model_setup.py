@@ -7,7 +7,6 @@ import shutil
 from collections.abc import Generator
 from typing import Any
 
-from identify import identify
 from jinja2 import Environment
 from jinja2 import FileSystemLoader as _FileSystemLoader
 from model_metadata.find import find_model_data_files
@@ -51,7 +50,7 @@ class OldFileSystemLoader:
         if os.path.isdir(src):
             os.makedirs(os.path.realpath(relpath), exist_ok=True)
             staged_file = None
-        elif identify.file_is_text(src):
+        elif is_text_file(src):
             staged_file = FileTemplate(src).to_file(relpath, **kwds)
         else:
             shutil.copy2(src, relpath)
@@ -73,7 +72,7 @@ class FileSystemLoader:
             dst_file = os.path.join(destdir, fname)
 
             os.makedirs(os.path.dirname(dst_file), exist_ok=True)
-            if identify.file_is_text(src_file):
+            if is_text_file(src_file):
                 with open(dst_file, "w") as fp:
                     fp.write(env.get_template(fname).render(**defaults))
             else:
@@ -92,3 +91,11 @@ def as_cwd(path: str, create: bool = True) -> Generator[None, None, None]:
 
     yield
     os.chdir(prev_cwd)
+
+
+def is_text_file(path: str) -> bool:
+    """Check if a file is text."""
+    # https://stackoverflow.com/questions/898669
+    TEXT_CHARS = bytearray({7, 8, 9, 10, 12, 13, 27} | set(range(0x20, 0x100)) - {0x7F})
+    with open(path, "rb") as fp:
+        return not bool(fp.read(1024).translate(None, TEXT_CHARS))

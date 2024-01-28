@@ -25,7 +25,6 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Physics",
 ]
 dependencies = [
-    "identify",
     "importlib-resources; python_version<'3.12'",
     "jinja2",
     "packaging",
