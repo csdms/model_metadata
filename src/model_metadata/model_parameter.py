@@ -2,66 +2,13 @@
 from __future__ import annotations
 
 import contextlib
-import re
 import sys
 import warnings
-from collections import OrderedDict
 from collections.abc import Sequence
 from typing import Any
 
 import yaml
-
-
-def setup_yaml_with_canonical_dict() -> None:
-    """https://stackoverflow.com/a/8661021"""
-    yaml.add_representer(
-        OrderedDict,
-        lambda self, data: self.represent_mapping(
-            "tag:yaml.org,2002:map", data.items()
-        ),
-        Dumper=yaml.SafeDumper,
-    )
-
-    def repr_ordered_dict(self: Any, data: dict[str, Any]) -> Any:
-        return self.represent_mapping("tag:yaml.org,2002:map", data.items())
-
-    yaml.add_representer(dict, repr_ordered_dict, Dumper=yaml.SafeDumper)
-
-    def repr_dict(self: Any, data: dict[str, Any]) -> Any:
-        return self.represent_mapping(
-            "tag:yaml.org,2002:map", sorted(data.items(), key=lambda t: t[0])
-        )
-
-    yaml.add_representer(dict, repr_dict, Dumper=yaml.SafeDumper)
-
-    # https://stackoverflow.com/a/45004464
-    def repr_str(dumper: Any, data: str) -> Any:
-        if "\n" in data:
-            return dumper.represent_scalar("tag:yaml.org,2002:str", data, style="|")
-        return dumper.represent_str(data)
-
-    yaml.add_representer(str, repr_str, Dumper=yaml.SafeDumper)
-
-    def repr_tuple(dumper: Any, data: Sequence[Any]) -> Any:
-        return dumper.represent_sequence("tag:yaml.org,2002:seq", list(data))
-
-    yaml.add_representer(tuple, repr_tuple, Dumper=yaml.SafeDumper)
-
-    yaml.add_implicit_resolver(
-        "tag:yaml.org,2002:float",
-        re.compile(
-            r"""^(?:
-         [-+]?(?:[0-9][0-9_]*)\.[0-9_]*(?:[eE][-+]?[0-9]+)?
-        |[-+]?(?:[0-9][0-9_]*)(?:[eE][-+]?[0-9]+)
-        |[-+]?\.[0-9_]+(?:[eE][-+]?[0-9]+)
-        |[-+]?[0-9][0-9_]*(?::[0-5]?[0-9])+\.[0-9_]*
-        |[-+]?\.(?:inf|Inf|INF)
-        |\.(?:nan|NaN|NAN))$""",
-            re.X,
-        ),
-        list("-+0123456789."),
-        Loader=yaml.SafeLoader,
-    )
+from model_metadata._utils import setup_yaml_with_canonical_dict
 
 
 setup_yaml_with_canonical_dict()

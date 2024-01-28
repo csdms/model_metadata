@@ -1,8 +1,6 @@
 #! /usr/bin/env python
 from __future__ import annotations
 
-import contextlib
-import importlib
 import os
 import pathlib
 import sys
@@ -22,6 +20,9 @@ from model_metadata.load import load_meta_section
 from model_metadata.model_info import ModelInfo
 from model_metadata.model_parameter import parameter_from_dict
 from model_metadata.model_parameter import setup_yaml_with_canonical_dict
+from model_metadata._utils import load_component
+from model_metadata._utils import parse_entry_point
+
 
 setup_yaml_with_canonical_dict()
 
@@ -41,25 +42,6 @@ def normalize_run_section(run: dict[str, Any] | None) -> dict[str, Any]:
     normed["config_file"].setdefault("contents", None)
 
     return normed
-
-
-def _load_component(entry_point: str) -> type:
-    if "" not in sys.path:
-        sys.path.append("")
-
-    module_name, cls_name = entry_point.split(":")
-
-    try:
-        module = importlib.import_module(module_name)
-    except ImportError:
-        raise
-    else:
-        try:
-            component = module.__dict__[cls_name]
-        except KeyError:
-            raise ImportError(cls_name)
-
-    return component
 
 
 class ModelMetadata:
@@ -118,8 +100,9 @@ class ModelMetadata:
         if isinstance(model, pathlib.Path):
             model = str(model)
         if isinstance(model, str) and ":" in model:
-            with contextlib.suppress(ImportError):
-                model = _load_component(model)
+            model = load_component(*parse_entry_point(model))
+            # with contextlib.suppress(ImportError):
+            #     model = _load_component(model)
 
         paths = []
 

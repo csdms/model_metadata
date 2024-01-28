@@ -1,14 +1,14 @@
 #! /usr/bin/env python
 from __future__ import annotations
 
-import contextlib
 import os
 import shutil
-from collections.abc import Generator
 from typing import Any
 
 from jinja2 import Environment
 from jinja2 import FileSystemLoader as _FileSystemLoader
+from model_metadata._utils import as_cwd
+from model_metadata._utils import is_text_file
 from model_metadata.find import find_model_data_files
 from model_metadata.find import is_metadata_file
 from model_metadata.model_data_files import FileTemplate
@@ -79,23 +79,3 @@ class FileSystemLoader:
                 shutil.copy2(src_file, dst_file)
 
         return tuple(manifest)
-
-
-@contextlib.contextmanager
-def as_cwd(path: str, create: bool = True) -> Generator[None, None, None]:
-    prev_cwd = os.getcwd()
-
-    if create:
-        os.makedirs(os.path.realpath(path), exist_ok=True)
-    os.chdir(path)
-
-    yield
-    os.chdir(prev_cwd)
-
-
-def is_text_file(path: str) -> bool:
-    """Check if a file is text."""
-    # https://stackoverflow.com/questions/898669
-    TEXT_CHARS = bytearray({7, 8, 9, 10, 12, 13, 27} | set(range(0x20, 0x100)) - {0x7F})
-    with open(path, "rb") as fp:
-        return not bool(fp.read(1024).translate(None, TEXT_CHARS))

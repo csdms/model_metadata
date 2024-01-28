@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 import argparse
-import importlib
-import keyword
 import os
 import sys
 from collections.abc import Iterable
@@ -10,10 +8,13 @@ from collections.abc import Sequence
 from functools import partial
 from typing import Any
 
+from model_metadata._utils import load_component
+from model_metadata._utils import parse_entry_point
 from model_metadata._version import __version__
 from model_metadata.api import find as _find
 from model_metadata.api import query as _query
 from model_metadata.api import stage as _stage
+from model_metadata.errors import BadEntryPointError
 from model_metadata.errors import MetadataNotFoundError
 from model_metadata.errors import MissingSectionError
 from model_metadata.errors import MissingValueError
@@ -44,8 +45,8 @@ class ValidateEntryPoint(argparse.Action):
 
         entry_point = values
         try:
-            module_name, class_name = validate_entry_point(entry_point)
-        except RuntimeError as error:
+            module_name, class_name = parse_entry_point(entry_point)
+        except BadEntryPointError as error:
             parser.error(f"{entry_point}: invalid entry-point: {str(error)}")
         else:
             setattr(namespace, self.dest, (module_name, class_name))
@@ -68,35 +69,6 @@ class ValidatePathExists(argparse.Action):
             parser.error(f"{path}: path does not exist")
         else:
             setattr(namespace, self.dest, path)
-
-
-def validate_entry_point(value: str) -> tuple[str, str]:
-    try:
-        module_name, class_name = str(value).split(":")
-    except ValueError:
-        raise RuntimeError("Bad entry point")
-
-    if keyword.iskeyword(module_name) or any(
-        not name.isidentifier() for name in module_name.split(".")
-    ):
-        raise RuntimeError(f"invalid module name ({module_name})")
-
-    if not class_name.isidentifier() or keyword.iskeyword(class_name):
-        raise RuntimeError(f"invalid class name ({class_name})")
-
-    return (module_name, class_name)
-
-
-def load_component(module_name: str, class_name: str) -> type[Any]:
-    module = importlib.import_module(module_name)
-    try:
-        component = getattr(module, class_name)
-    except AttributeError:
-        raise ImportError(
-            f"unable to import {class_name} from {module_name}", name=module_name
-        )
-
-    return component
 
 
 def main(argv: tuple[str, ...] | None = None) -> int:

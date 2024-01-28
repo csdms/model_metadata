@@ -48,3 +48,15 @@ class MissingValueError(ModelMetadataError):
 
     def __str__(self) -> str:
         return self._name
+
+
+class BadEntryPointError(ModelMetadataError):
+
+    """Raise if an entry-point string is bad, in some way."""
+
+    def __init__(self, entry_point: str, msg: str | None = None):
+        self._entry_point = entry_point
+        self._msg = msg
+
+    def __str__(self) -> str:
+        return self._entry_point + f": {self._msg}" if self._msg else ""
