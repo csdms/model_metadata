@@ -39,6 +39,8 @@ jobs:
     needs: ["build-sdist"]
     name: "Publish to TestPyPI"
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
 
     steps:
       - uses: actions/download-artifact@v3
