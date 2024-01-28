@@ -43,6 +43,29 @@ def lint(session: nox.Session) -> None:
     session.run("pre-commit", "run", "--all-files")
 
 
+@nox.session
+def build(session: nox.Session) -> None:
+    session.install("pip")
+    session.install("build")
+    session.run("python", "--version")
+    session.run("pip", "--version")
+    session.run("python", "-m", "build", "--outdir", "./build/wheelhouse")
+
+
+@nox.session(name="publish-testpypi")
+def publish_testpypi(session):
+    """Publish wheelhouse/* to TestPyPI."""
+    session.run("twine", "check", "build/wheelhouse/*")
+    session.run(
+        "twine",
+        "upload",
+        "--skip-existing",
+        "--repository-url",
+        "https://test.pypi.org/legacy/",
+        "build/wheelhouse/*.tar.gz",
+    )
+
+
 @nox.session(python=False)
 def clean(session):
     """Remove all .venv's, build files and caches in the directory."""
