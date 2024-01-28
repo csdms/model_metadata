@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 from __future__ import annotations
 
+import contextlib
 import os
 import pathlib
 import sys
@@ -12,6 +13,7 @@ if sys.version_info >= (3, 12):  # pragma: no cover (PY12+)
 else:  # pragma: no cover (<PY312)
     from importlib_resources import files
 import yaml
+from model_metadata.errors import BadEntryPointError
 from model_metadata.errors import MetadataNotFoundError
 from model_metadata.errors import MissingSectionError
 from model_metadata.errors import MissingValueError
@@ -97,12 +99,10 @@ class ModelMetadata:
         list of Paths
             Paths to search for metadata.
         """
-        if isinstance(model, pathlib.Path):
+        if isinstance(model, (str, pathlib.Path)):
             model = str(model)
-        if isinstance(model, str) and ":" in model:
-            model = load_component(*parse_entry_point(model))
-            # with contextlib.suppress(ImportError):
-            #     model = _load_component(model)
+            with contextlib.suppress(BadEntryPointError):
+                model = load_component(*parse_entry_point(model))
 
         paths = []
 
