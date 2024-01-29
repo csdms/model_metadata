@@ -21,7 +21,7 @@
 #
 # The following parameters control the name and duration of the run along
 # with a couple of other general settings.
-# 
+#
 OUTFILENAME: name of the run
 delta
 RUNTIME: Duration of run (years)
@@ -313,13 +313,13 @@ CHAN_GEOM_MODEL: option for channel width closure
 1
 HYDR_WID_COEFF_DS: coeff. on downstream hydraulic width (m/(m3/s)^exp)
 10.0
-HYDR_WID_EXP_DS: exponent on downstream hydraulic width relation 
+HYDR_WID_EXP_DS: exponent on downstream hydraulic width relation
 0.5
 HYDR_WID_EXP_STN: exp. on at-a-station hydraulic width relation
 0.5
 HYDR_DEP_COEFF_DS: coeff. on downstream hydraulic depth (m/(m3/s)^exp)
 1.0
-HYDR_DEP_EXP_DS: exponent on downstream hydraulic depth relation 
+HYDR_DEP_EXP_DS: exponent on downstream hydraulic depth relation
 0
 HYDR_DEP_EXP_STN: exp. on at-a-station hydraulic depth relation
 0
@@ -360,12 +360,3 @@ OPTFOLDDENS: Option for mesh densification around a growing fold
 0
 OPTLAYEROUTPUT
 0
-
-
-
-
-
-
-
-
-

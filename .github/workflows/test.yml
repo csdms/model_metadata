@@ -20,43 +20,36 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: [3.7, 3.8, 3.9]
+        python-version: ["3.10", "3.11", "3.12"]
+      fail-fast: false
 
     steps:
-      - uses: actions/checkout@v2
-
-      - uses: conda-incubator/setup-miniconda@v2
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          auto-update-conda: true
           python-version: ${{ matrix.python-version }}
-          mamba-version: "*"
-          channels: conda-forge,defaults
-          channel-priority: true
-
-      - name: Show conda installation info
-        run: |
-          mamba info
-          mamba list
-
-      - name: Install requirements
-        run: |
-          mamba install --file=requirements.txt --file=requirements-testing.txt
-          mamba list
-
-      - name: Build and install package
-        run: |
-          pip install -e .
 
       - name: Test
         run: |
-          python -c 'import model_metadata; print(model_metadata.__version__)'
-          pytest --cov=model_metadata --cov-report=xml:$(pwd)/coverage.xml -vvv
-          mmd --help
-          mmd --version
-          mmd find --help
-          mmd query --help
-          mmd stage --help
+          pip install nox
+          nox --non-interactive --error-on-missing-interpreter -s test test-cli
 
       - name: Coveralls
-        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.9'
-        uses: AndreMiras/coveralls-python-action@v20201129
+        if: matrix.os == 'ubuntu-latest'
+        uses: AndreMiras/coveralls-python-action@develop
+        with:
+          parallel: true
+          flag-name: py${{ matrix.python-version }}-${{ matrix.os }}
+
+          debug: true
+
+  coveralls_finish:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Coveralls Finished
+        uses: AndreMiras/coveralls-python-action@develop
+        with:
+          parallel-finished: true
+          debug: true

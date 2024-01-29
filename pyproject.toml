@@ -1,0 +1,116 @@
+[project]
+name = "model_metadata"
+requires-python = ">=3.10"
+description = "Model metadata"
+keywords = [
+    "BMI",
+    "Basic Model Interface",
+]
+authors = [
+    { name = "Eric Hutton", email = "huttone@colorado.edu" },
+]
+maintainers = [
+    { name = "Eric Hutton", email = "huttone@colorado.edu" },
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Topic :: Scientific/Engineering :: Physics",
+]
+dependencies = [
+    "importlib-resources; python_version<'3.12'",
+    "jinja2",
+    "packaging",
+    "pyyaml",
+]
+dynamic = [
+    "version",
+    "readme",
+]
+
+[project.license]
+text = "MIT"
+
+[project.scripts]
+mmd = "model_metadata.main:main"
+model-metadata = "model_metadata.main:main"
+
+[project.entry-points."bmi.plugins"]
+bmi_mmd = "model_metadata.main:configure_parser_mmd"
+
+[project.urls]
+documentation = "https://github.com/csdms/model_metadata"
+homepage = "https://github.com/csdms/model_metadata"
+repository = "https://github.com/csdms/model_metadata"
+
+[project.optional-dependencies]
+dev = [
+    "nox",
+]
+testing = [
+    "coveralls",
+    "pytest",
+    "pytest-cov",
+    "pytest-datadir",
+]
+
+[build-system]
+requires = [
+    "setuptools >=61",
+]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.dynamic.readme]
+file = "README.md"
+content-type = "text/markdown"
+
+[tool.setuptools.dynamic.version]
+attr = "model_metadata._version.__version__"
+
+[tool.setuptools.packages.find]
+where = [
+    "src",
+]
+
+[tool.coverage.run]
+relative_files = true
+
+[tool.mypy]
+check_untyped_defs = true
+disallow_any_generics = true
+disallow_incomplete_defs = true
+disallow_untyped_defs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+testpaths = [
+    "src",
+    "tests",
+]
+norecursedirs = [
+    ".*",
+    "*.egg*",
+    "build",
+    "dist",
+]
+addopts = [
+    "--ignore=setup.py",
+    "--tb=native",
+    "--durations=16",
+    "--strict-markers",
+    "--doctest-modules",
+    "-vvv",
+]
+
+[tool.zest-releaser]
+tag-format = "v{version}"
+python-file-with-version = "src/model_metadata/_version.py"
