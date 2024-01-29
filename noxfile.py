@@ -66,6 +66,18 @@ def publish_testpypi(session):
     )
 
 
+@nox.session(name="publish-pypi")
+def publish_pypi(session):
+    """Publish wheelhouse/* to PyPI."""
+    session.run("twine", "check", "build/wheelhouse/*")
+    session.run(
+        "twine",
+        "upload",
+        "--skip-existing",
+        "build/wheelhouse/*.tar.gz",
+    )
+
+
 @nox.session(python=False)
 def clean(session):
     """Remove all .venv's, build files and caches in the directory."""
