@@ -382,6 +382,14 @@ class IntParameter(NumberParameter):
         range: tuple[int, int] | None = None,
         units: str | None = None,
     ):
+        if isinstance(value, float):
+            warnings.warn(
+                f"{value}: floating point number passed as an integer parameter, value"
+                f" will be truncated to {int(value)}",
+                stacklevel=2,
+            )
+            value = int(value)
+
         if not isinstance(value, (int, str)):
             raise ValueError(
                 "value must be either an int or a string that can be converted to"
