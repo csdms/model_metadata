@@ -238,13 +238,13 @@ class NumberParameter(ModelParameter):
         if range_ is not None and len(range_) != 2:
             raise ValueError("range must be either None or (min, max)")
 
-        try:
-            value = int(value)
-        except ValueError:
-            value = float(value)
-        finally:
-            if not isinstance(value, (int, float)):
-                raise ValueError("value is not a number")
+        if isinstance(value, str):
+            try:
+                value = int(value)
+            except ValueError:
+                value = float(value)
+        if not isinstance(value, (int, float)):
+            raise ValueError("value is not a number")
 
         super().__init__(value, desc=desc)
 
