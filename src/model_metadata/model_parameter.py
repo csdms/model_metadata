@@ -238,13 +238,13 @@ class NumberParameter(ModelParameter):
         if range_ is not None and len(range_) != 2:
             raise ValueError("range must be either None or (min, max)")
 
-        try:
-            value = int(value)
-        except ValueError:
-            value = float(value)
-        finally:
-            if not isinstance(value, (int, float)):
-                raise ValueError("value is not a number")
+        if isinstance(value, str):
+            try:
+                value = int(value)
+            except ValueError:
+                value = float(value)
+        if not isinstance(value, (int, float)):
+            raise ValueError("value is not a number")
 
         super().__init__(value, desc=desc)
 
@@ -382,6 +382,14 @@ class IntParameter(NumberParameter):
         range: tuple[int, int] | None = None,
         units: str | None = None,
     ):
+        if isinstance(value, float):
+            warnings.warn(
+                f"{value}: floating point number passed as an integer parameter, value"
+                f" will be truncated to {int(value)}",
+                stacklevel=2,
+            )
+            value = int(value)
+
         if not isinstance(value, (int, str)):
             raise ValueError(
                 "value must be either an int or a string that can be converted to"
