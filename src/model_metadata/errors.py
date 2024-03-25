@@ -3,14 +3,12 @@ from __future__ import annotations
 
 
 class ModelMetadataError(Exception):
-
     """Base error for model_metadata package."""
 
     pass
 
 
 class MetadataNotFoundError(ModelMetadataError):
-
     """Raise if metadata cannot be found."""
 
     def __init__(self, path_to_metadata: str):
@@ -21,7 +19,6 @@ class MetadataNotFoundError(ModelMetadataError):
 
 
 class MissingSectionError(ModelMetadataError):
-
     """Raise if a section in not found in the metadata."""
 
     def __init__(self, name: str):
@@ -36,7 +33,6 @@ class MissingSectionError(ModelMetadataError):
 
 
 class MissingValueError(ModelMetadataError):
-
     """Raise if a value is not found in a metadata section."""
 
     def __init__(self, name: str):
@@ -51,7 +47,6 @@ class MissingValueError(ModelMetadataError):
 
 
 class BadEntryPointError(ModelMetadataError):
-
     """Raise if an entry-point string is bad, in some way."""
 
     def __init__(self, entry_point: str, msg: str | None = None):
