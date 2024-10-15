@@ -1,8 +1,13 @@
 # Changelog for model_metadata
 
-## 0.7.1 (unreleased)
+## 0.8.2 (unreleased)
 
-- Nothing changed yet.
+- Fixed an error that was caused when the type of a metadata value's
+  default value did not match it's specified type.
+- Added support for Python 3.13.
+- Updated the continuous integration to build source distributions and
+  then test those distributions. The *release* and *prerelease* workflows
+  are now part of the *test* workflow.
 
 ## 0.7.0 (2020-09-22)
 
