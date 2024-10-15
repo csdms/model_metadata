@@ -70,5 +70,7 @@ repos:
   hooks:
   - id: mypy
     language_version: python3.12
-    additional_dependencies: [types-all]
+    additional_dependencies:
+      - tokenize-rt==3.2.0
+      - types-PyYAML
     files: src/.*\.py$
