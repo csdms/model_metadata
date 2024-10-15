@@ -1,6 +1,6 @@
 # Changelog for model_metadata
 
-## 0.8.2 (unreleased)
+## 0.8.2 (2024-10-15)
 
 - Fixed an error that was caused when the type of a metadata value's
   default value did not match it's specified type.
