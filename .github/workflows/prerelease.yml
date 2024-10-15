@@ -26,7 +26,7 @@ jobs:
     name: "Show artifacts"
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4.1.7
       with:
         name: pypi-artifacts
         path: ${{ github.workspace }}/dist
@@ -43,7 +43,7 @@ jobs:
       id-token: write
 
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4.1.7
         with:
           name: pypi-artifacts
           path: ${{ github.workspace }}/dist
