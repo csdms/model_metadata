@@ -3,14 +3,34 @@ name: Test
 on: [push, pull_request]
 
 jobs:
-  build-and-test:
-    # We want to run on external PRs, but not on our own internal PRs as they'll be run
-    # by the push to the branch. Without this if check, checks are duplicated since
-    # internal PRs match both the push and pull_request events.
-    if:
-      github.event_name == 'push' || github.event.pull_request.head.repo.full_name !=
-      github.repository
+  check-tag:
+    # Run on external PRs, but not on internal PRs, to avoid duplicate runs
+    if: |
+      github.event_name == 'push' ||
+      github.event.pull_request.head.repo.full_name != github.repository
 
+    runs-on: ubuntu-latest
+    outputs:
+      publish_url: ${{ steps.check-publish.outputs.publish_url }}
+
+    steps:
+      - name: Check if this is a release/prerelease
+        id: check-publish
+        run: |
+          tag_name="${GITHUB_REF#refs/tags/}"
+          if [[ "$tag_name" =~ ^v[0-9]+\.[0-9]+\.[0-9]+[ab][0-9]+$ ]]; then
+            publish_url="https://test.pypi.org/legacy/"
+          elif [[ "$tag_name" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            publish_url="https://upload.pypi.org/legacy/"
+          else
+            publish_url="none"
+          fi
+          echo "publish_url=$publish_url" >> "$GITHUB_OUTPUT"
+          echo "tag_name=$tag_name"
+          echo "publish_url=$publish_url"
+
+  build-and-test:
+    needs: check-tag
     runs-on: ${{ matrix.os }}
 
     defaults:
