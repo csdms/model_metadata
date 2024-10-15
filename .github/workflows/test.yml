@@ -44,8 +44,8 @@ jobs:
           name: build-sdist
           path: ${{ github.workspace }}/dist/*.tar.gz
 
-  build-and-test:
-    needs: check-tag
+  test:
+    needs: build-sdist
     runs-on: ${{ matrix.os }}
 
     defaults:
@@ -65,10 +65,16 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: "build-*"
+          merge-multiple: true
+          path: ${{ github.workspace }}/dist
+
       - name: Test
         run: |
           pip install nox
-          nox --non-interactive --error-on-missing-interpreter -s test test-cli
+          nox --non-interactive --error-on-missing-interpreter -s test test-cli -- dist/*.tar.gz
 
       - name: Coveralls
         if: matrix.os == 'ubuntu-latest'
@@ -80,7 +86,7 @@ jobs:
           debug: true
 
   coveralls_finish:
-    needs: build-and-test
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - name: Coveralls Finished
