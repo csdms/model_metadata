@@ -137,7 +137,6 @@ def object_properties(obj: ModelInfo) -> tuple[tuple[str, Any], ...]:
 
 
 class ModelInfo:
-
     """Information about a model."""
 
     def __init__(

@@ -45,7 +45,7 @@ def load_component(module_name: str, class_name: str) -> type[Any]:
 
 
 @contextlib.contextmanager
-def as_cwd(path: str, create: bool = True) -> Generator[None, None, None]:
+def as_cwd(path: str, create: bool = True) -> Generator[None]:
     prev_cwd = os.getcwd()
 
     if create:

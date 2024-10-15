@@ -87,7 +87,7 @@ def main(argv: tuple[str, ...] | None = None) -> int:
             help="Also emit status messages to stderr.",
         )
         parser.add_argument(
-            "--silent", action="store_true", help="Suppress status status messages"
+            "--silent", action="store_true", help="Suppress status messages"
         )
         return parser
 
