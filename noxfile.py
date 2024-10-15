@@ -13,9 +13,10 @@ ROOT = pathlib.Path(__file__).parent
 @nox.session
 def test(session: nox.Session) -> None:
     """Run the tests."""
-    session.install(".[testing]")
+    session.install("-r", "requirements-testing.txt")
+    install(session)
 
-    args = ["--cov", PROJECT, "-vvv"] + session.posargs
+    args = ["--cov", PROJECT, "-vvv"]
 
     if "CI" in os.environ:
         args.append(f"--cov-report=xml:{ROOT.absolute()!s}/coverage.xml")
@@ -28,12 +29,26 @@ def test(session: nox.Session) -> None:
 @nox.session(name="test-cli")
 def test_cli(session: nox.Session) -> None:
     """Test the command line interface."""
-    session.install(".")
+    install(session)
+
     session.run("model-metadata", "--help")
     session.run("model-metadata", "--version")
     session.run("model-metadata", "find", "--help")
     session.run("model-metadata", "query", "--help")
     session.run("model-metadata", "stage", "--help")
+
+
+@nox.session
+def install(session: nox.Session) -> None:
+    first_arg = session.posargs[0] if session.posargs else None
+
+    if first_arg:
+        if os.path.isfile(first_arg):
+            session.install(first_arg)
+        else:
+            session.error("path must be a source distribution")
+    else:
+        session.install(".")
 
 
 @nox.session
