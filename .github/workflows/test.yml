@@ -76,6 +76,11 @@ jobs:
           pip install nox
           nox --non-interactive --error-on-missing-interpreter -s test test-cli -- dist/*.tar.gz
 
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+
   publish:
     needs:
       - check-tag
