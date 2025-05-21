@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
+
+from model_metadata.errors import UnknownKeyError
 from model_metadata.model_setup import FileSystemLoader
 from model_metadata.model_setup import OldFileSystemLoader
 from model_metadata.modelmetadata import ModelMetadata
@@ -77,3 +80,8 @@ def stage(
         manifest = FileSystemLoader(mmd).stage_all(dest, **defaults)
 
     return manifest
+
+
+def _check_for_unknown_keys(allowed: Iterable[str], user: Iterable[str]) -> None:
+    if unknown_keys := (set(user) - set(allowed)):
+        raise UnknownKeyError(unknown_keys)
