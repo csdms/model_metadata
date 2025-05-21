@@ -16,14 +16,16 @@ def test(session: nox.Session) -> None:
     session.install("-r", "requirements-testing.txt")
     install(session)
 
-    args = ["--cov", PROJECT, "-vvv"]
-
-    if "CI" in os.environ:
-        args.append(f"--cov-report=xml:{ROOT.absolute()!s}/coverage.xml")
-    session.run("pytest", *args)
-
-    if "CI" not in os.environ:
-        session.run("coverage", "report", "--ignore-errors", "--show-missing")
+    session.run(
+        "coverage",
+        "run",
+        "--branch",
+        "--source=model_metadata,tests",
+        "--module",
+        "pytest",
+    )
+    session.run("coverage", "report", "--ignore-errors", "--show-missing")
+    session.run("coverage", "xml", "-o", "coverage.xml")
 
 
 @nox.session(name="test-cli")
