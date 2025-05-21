@@ -1,6 +1,8 @@
 #! /usr/bin/env python
 from __future__ import annotations
 
+from collections.abc import Iterable
+
 
 class ModelMetadataError(Exception):
     """Base error for model_metadata package."""
@@ -55,3 +57,16 @@ class BadEntryPointError(ModelMetadataError):
 
     def __str__(self) -> str:
         return self._entry_point + f": {self._msg}" if self._msg else ""
+
+
+class UnknownKeyError(ModelMetadataError):
+    """Raise if a dictionary contains one or more unrecognized keys."""
+
+    def __init__(self, unknown: Iterable[str]) -> None:
+        super().__init__(*sorted(set(unknown)))
+
+    def __str__(self) -> str:
+        return (
+            f"unknown key{'s' if len(self.args) > 1 else ''}:"
+            f" {', '.join(repr(key) for key in self.args)}"
+        )
