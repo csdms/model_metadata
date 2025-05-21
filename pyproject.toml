@@ -56,9 +56,8 @@ dev = [
     "nox",
 ]
 testing = [
-    "coveralls",
+    "coverage",
     "pytest",
-    "pytest-cov",
     "pytest-datadir",
 ]
 
