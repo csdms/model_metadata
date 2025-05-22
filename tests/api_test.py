@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import itertools
 import os
 import pathlib
 
@@ -10,6 +11,7 @@ from model_metadata.api import stage
 from model_metadata.errors import MetadataNotFoundError
 from model_metadata.errors import MissingSectionError
 from model_metadata.errors import MissingValueError
+from model_metadata.errors import UnknownKeyError
 
 
 class Model:
@@ -83,6 +85,26 @@ def test_stage_is_filled_out(tmpdir, shared_datadir):
             contents = fp.read()
         assert "{{" not in contents
         assert "}}" not in contents
+
+
+def test_stage_with_parameters(tmpdir, shared_datadir):
+    with tmpdir.as_cwd():
+        stage(str(shared_datadir), parameters={"run_duration": 999})
+
+        file_contains_runtime = False
+        with open("child.in") as fp:
+            for this, next_ in itertools.pairwise(fp):
+                file_contains_runtime = this.startswith("RUNTIME")
+                if file_contains_runtime:
+                    assert next_.startswith("999")
+                    break
+        assert file_contains_runtime
+
+
+@pytest.mark.parametrize("params", ({"foo": "bar"}, {"foo": "bar", "baz": "foobar"}))
+def test_stage_with_unknown_parameters(tmpdir, shared_datadir, params):
+    with tmpdir.as_cwd(), pytest.raises(UnknownKeyError):
+        stage(str(shared_datadir), parameters=params)
 
 
 def test_query_with_bad_section(shared_datadir):
