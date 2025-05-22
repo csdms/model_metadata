@@ -1,4 +1,3 @@
-coveralls
-pytest-cov
+coverage
 pytest-datadir
 pytest>=3.6
