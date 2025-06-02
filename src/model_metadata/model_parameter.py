@@ -70,7 +70,7 @@ def infer_range(
 
 
 def range_as_tuple(
-    range: tuple[float, float] | None
+    range: tuple[float, float] | None,
 ) -> tuple[None, None] | tuple[float, float]:
     if range is None:
         return (None, None)
