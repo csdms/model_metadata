@@ -53,7 +53,7 @@ class FileTemplate:
             os.makedirs(os.path.realpath(dest), exist_ok=True)
             dest = os.path.join(dest, self.tail)
 
-        (base, ext) = os.path.splitext(dest)
+        base, ext = os.path.splitext(dest)
         if ext == ".tmpl":
             dest = base
 
@@ -97,14 +97,14 @@ def format_template_file(src: str, dest: str, **kwds: dict[str, Any]) -> None:
     dest : str
         Path to output file that will contain the substitutions.
     """
-    (srcdir, fname) = os.path.split(src)
+    srcdir, fname = os.path.split(src)
     dest = os.path.abspath(dest)
 
     if dest.endswith(os.path.sep):
         os.makedirs(os.path.realpath(dest), exist_ok=True)
         dest = os.path.join(dest, fname)
 
-    (base, ext) = os.path.splitext(dest)
+    base, ext = os.path.splitext(dest)
     if ext == ".tmpl":
         dest = base
 
