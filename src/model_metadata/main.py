@@ -20,7 +20,6 @@ from model_metadata.errors import MissingSectionError
 from model_metadata.errors import MissingValueError
 from model_metadata.modelmetadata import ModelMetadata
 
-
 out = partial(print, file=sys.stderr)
 
 
