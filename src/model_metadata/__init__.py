@@ -5,7 +5,6 @@ from model_metadata.errors import MetadataNotFoundError
 from model_metadata.model_info import ModelInfo
 from model_metadata.modelmetadata import ModelMetadata
 
-
 __all__ = [
     "__version__",
     "ModelInfo",

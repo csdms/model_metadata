@@ -10,7 +10,6 @@ from typing import Any
 import yaml
 from model_metadata._utils import setup_yaml_with_canonical_dict
 
-
 setup_yaml_with_canonical_dict()
 
 
@@ -70,7 +69,7 @@ def infer_range(
 
 
 def range_as_tuple(
-    range: tuple[float, float] | None
+    range: tuple[float, float] | None,
 ) -> tuple[None, None] | tuple[float, float]:
     if range is None:
         return (None, None)
