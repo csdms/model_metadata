@@ -25,7 +25,6 @@ from model_metadata.model_parameter import setup_yaml_with_canonical_dict
 from model_metadata._utils import load_component
 from model_metadata._utils import parse_entry_point
 
-
 setup_yaml_with_canonical_dict()
 
 

@@ -5,7 +5,6 @@ import yaml
 from model_metadata.model_parameter import setup_yaml_with_canonical_dict
 from pytest import approx
 
-
 setup_yaml_with_canonical_dict()
 
 
